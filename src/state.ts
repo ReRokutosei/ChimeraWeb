@@ -6,6 +6,11 @@ export interface ImageInfo {
   height: number;
 }
 
+export interface SplitImageResult {
+  imageName: string;
+  cells: { blob: Blob; index: number }[];
+}
+
 type Listener = () => void;
 
 class AppState {
@@ -20,7 +25,9 @@ class AppState {
   resultType: 'stitch' | 'split' | null = null;
   resultBlob: Blob | null = null;
   resultFormat: 'png' | 'jpeg' = 'png';
-  resultCells: { blob: Blob; index: number }[] | null = null;
+
+  splitResults: SplitImageResult[] | null = null;
+  currentSplitImageIndex = 0;
 
   stitchMode: 'DIRECT_VERTICAL' | 'DIRECT_HORIZONTAL' = 'DIRECT_VERTICAL';
   overlayMode: 'DISABLED' | 'ENABLED' = 'DISABLED';

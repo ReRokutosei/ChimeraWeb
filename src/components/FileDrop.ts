@@ -3,7 +3,21 @@ import { state, type ImageInfo } from '../state';
 let counter = 0;
 
 export function loadImages(files: File[]): void {
-  for (const file of files) {
+  let remaining = files;
+
+  if (state.isCutMode) {
+    const maxNew = 10 - state.images.length;
+    if (maxNew <= 0) {
+      alert('切割模式最多支持 10 张图片');
+      return;
+    }
+    if (files.length > maxNew) {
+      alert(`切割模式最多添加 ${maxNew} 张图片，已自动保留前 ${maxNew} 张`);
+      remaining = files.slice(0, maxNew);
+    }
+  }
+
+  for (const file of remaining) {
     if (!file.type.startsWith('image/')) continue;
     const id = `img_${Date.now()}_${counter++}`;
     const url = URL.createObjectURL(file);

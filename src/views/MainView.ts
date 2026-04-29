@@ -1,4 +1,4 @@
-import { state } from '../state';
+import { state, type SplitImageResult } from '../state';
 import {
   loadSettings, saveStitchMode, saveWidthScale, saveOverlayMode,
   saveOverlayArea, saveImageSpacing, saveSpacingColor,
@@ -41,11 +41,9 @@ function renderTopBar(): HTMLElement {
   themeBtn.title = '切换主题';
   themeBtn.addEventListener('click', () => {
     const current = document.documentElement.getAttribute('data-theme');
-    const next = current === 'dark' ? '' : 'dark';
-    document.documentElement.setAttribute('data-theme', next);
+    document.documentElement.setAttribute('data-theme', current === 'dark' ? '' : 'dark');
     updateThemeIcon(themeBtn);
   });
-
   actions.appendChild(themeBtn);
   bar.appendChild(logo);
   bar.appendChild(actions);
@@ -122,13 +120,10 @@ function renderModeSection(): HTMLElement {
     val => { saveCutGrid(Number(val)); }
   );
   gridCtrl.className += ' grid-ctrl';
-  row.appendChild(gridCtrl);
-
-  state.on('mode', () => {
-    gridCtrl.classList.toggle('hidden', !state.isCutMode);
-  });
   gridCtrl.classList.toggle('hidden', !state.isCutMode);
+  state.on('mode', () => gridCtrl.classList.toggle('hidden', !state.isCutMode));
 
+  row.appendChild(gridCtrl);
   section.appendChild(row);
   return section;
 }
@@ -138,7 +133,6 @@ function renderStitchParams(): HTMLElement {
   card.className = 'params-card';
   card.id = 'stitch-params';
 
-  // Direction
   const dirRow = document.createElement('div');
   dirRow.className = 'param-row';
   dirRow.appendChild(createLabel('拼接方向'));
@@ -150,7 +144,6 @@ function renderStitchParams(): HTMLElement {
   dirRow.appendChild(dirCtrl);
   card.appendChild(dirRow);
 
-  // Width scale
   const wRow = document.createElement('div');
   wRow.className = 'param-row';
   wRow.appendChild(createLabel('图片缩放'));
@@ -162,7 +155,6 @@ function renderStitchParams(): HTMLElement {
   wRow.appendChild(wCtrl);
   card.appendChild(wRow);
 
-  // Overlay
   const ovRow = document.createElement('div');
   ovRow.className = 'param-row';
   ovRow.appendChild(createLabel('叠加模式'));
@@ -174,7 +166,6 @@ function renderStitchParams(): HTMLElement {
   ovRow.appendChild(ovCtrl);
   card.appendChild(ovRow);
 
-  // Overlay area (hidden when disabled)
   const oaRow = document.createElement('div');
   oaRow.className = 'param-row';
   oaRow.id = 'overlay-area-row';
@@ -184,12 +175,10 @@ function renderStitchParams(): HTMLElement {
   oaInput.addEventListener('change', () => saveOverlayArea(Number(oaInput.value)));
   oaRow.appendChild(oaInput);
   card.appendChild(oaRow);
-
   state.on('overlayMode', () => {
     oaRow.style.display = state.overlayMode === 'ENABLED' ? '' : 'none';
   });
 
-  // Spacing
   const spRow = document.createElement('div');
   spRow.className = 'param-row';
   spRow.appendChild(createLabel('间隔像素'));
@@ -201,7 +190,14 @@ function renderStitchParams(): HTMLElement {
   spRow.appendChild(cp);
   card.appendChild(spRow);
 
-  // Output format
+  return card;
+}
+
+function renderOutputParams(): HTMLElement {
+  const card = document.createElement('div');
+  card.className = 'params-card';
+  card.id = 'output-params';
+
   const fmtRow = document.createElement('div');
   fmtRow.className = 'param-row';
   fmtRow.appendChild(createLabel('输出格式'));
@@ -214,16 +210,26 @@ function renderStitchParams(): HTMLElement {
     if (f === state.outputFormat) opt.selected = true;
     fmtSelect.appendChild(opt);
   });
-  fmtSelect.addEventListener('change', () => saveOutputFormat(fmtSelect.value as 'png' | 'jpeg'));
-  fmtRow.appendChild(fmtSelect);
 
-  fmtRow.appendChild(createLabel('质量'));
+  const qlRow = document.createElement('div');
+  qlRow.className = 'param-row';
+  qlRow.id = 'quality-row';
+  qlRow.style.display = state.outputFormat === 'jpeg' ? '' : 'none';
+  qlRow.appendChild(createLabel('质量'));
   const qlInput = createNumberInput('quality-input', state.outputQuality, 1, 100);
   qlInput.addEventListener('change', () => saveOutputQuality(Number(qlInput.value)));
-  fmtRow.appendChild(qlInput);
-  fmtRow.appendChild(createLabel('%'));
+  qlRow.appendChild(qlInput);
+  qlRow.appendChild(createLabel('%'));
 
+  fmtSelect.addEventListener('change', () => {
+    const fmt = fmtSelect.value as 'png' | 'jpeg';
+    saveOutputFormat(fmt);
+    qlRow.style.display = fmt === 'jpeg' ? '' : 'none';
+  });
+
+  fmtRow.appendChild(fmtSelect);
   card.appendChild(fmtRow);
+  card.appendChild(qlRow);
 
   return card;
 }
@@ -264,9 +270,13 @@ function renderActionBar(onStart: () => void): HTMLElement {
   startBtn.className = 'action-btn';
 
   function updateStartBtn(): void {
+    const disabled = !state.isCutMode && state.images.length <= 1;
     startBtn.textContent = state.isCutMode ? '开始切割' : '开始拼接';
+    startBtn.classList.toggle('disabled', disabled);
+    (startBtn as HTMLButtonElement).disabled = disabled;
   }
   state.on('mode', updateStartBtn);
+  state.on('images', updateStartBtn);
   updateStartBtn();
 
   startBtn.addEventListener('click', onStart);
@@ -285,110 +295,119 @@ function showLoading(): () => void {
 }
 
 export async function renderMainView(container: HTMLElement): Promise<void> {
-  container.innerHTML = '';
-  loadSettings();
+  try {
+    container.innerHTML = '';
+    loadSettings();
 
-  const scrollArea = document.createElement('div');
-  scrollArea.className = 'scroll-area';
+    const scrollArea = document.createElement('div');
+    scrollArea.className = 'scroll-area';
 
-  const topBar = renderTopBar();
-  scrollArea.appendChild(topBar);
+    scrollArea.appendChild(renderTopBar());
 
-  // Drop zone (always visible, changes size)
-  const dropContainer = document.createElement('div');
-  dropContainer.id = 'drop-container';
-  scrollArea.appendChild(dropContainer);
+    const dropContainer = document.createElement('div');
+    dropContainer.id = 'drop-container';
+    scrollArea.appendChild(dropContainer);
 
-  // Mode section (always visible)
-  const modeSection = renderModeSection();
-  scrollArea.appendChild(modeSection);
+    scrollArea.appendChild(renderModeSection());
 
-  // Stitch params card
-  const stitchParams = renderStitchParams();
-  stitchParams.id = 'stitch-params';
-  stitchParams.classList.toggle('hidden', state.isCutMode);
-  state.on('mode', () => stitchParams.classList.toggle('hidden', state.isCutMode));
-  scrollArea.appendChild(stitchParams);
+    const stitchParams = renderStitchParams();
+    stitchParams.id = 'stitch-params';
+    stitchParams.classList.toggle('hidden', state.isCutMode);
+    state.on('mode', () => stitchParams.classList.toggle('hidden', state.isCutMode));
+    scrollArea.appendChild(stitchParams);
 
-  // Action bar
-  const actionBar = renderActionBar(async () => {
-    if (state.images.length === 0) return;
+    const outputParams = renderOutputParams();
+    outputParams.id = 'output-params';
+    scrollArea.appendChild(outputParams);
 
-    const hide = showLoading();
-    try {
-      if (state.isCutMode) {
-        const current = state.images[state.currentImageIndex] || state.images[0];
-        const img = new Image();
-        await new Promise<void>((resolve, reject) => {
-          img.onload = () => resolve();
-          img.onerror = () => reject(new Error('Failed to load: ' + current.name));
-          img.src = current.src;
-        });
-        const cells = await splitGrid(img, state.cutGrid);
-        state.resultType = 'split';
-        state.resultCells = cells.map(c => ({ blob: c.blob, index: c.index }));
-        state.view = 'result';
-        state.notify('view');
-      } else {
-        const loaded = await Promise.all(state.images.map(info =>
-          new Promise<HTMLImageElement>((resolve, reject) => {
+    const actionBar = renderActionBar(async () => {
+      if (state.images.length === 0) return;
+      if (!state.isCutMode && state.images.length <= 1) return;
+
+      const hide = showLoading();
+      try {
+        if (state.isCutMode) {
+          const results: SplitImageResult[] = [];
+          for (const info of state.images) {
             const img = new Image();
-            img.onload = () => resolve(img);
-            img.onerror = () => reject(new Error('Failed to load: ' + info.name));
-            img.src = info.src;
-          })
-        ));
+            await new Promise<void>((resolve, reject) => {
+              img.onload = () => resolve();
+              img.onerror = () => reject(new Error('加载失败: ' + info.name));
+              img.src = info.src;
+            });
+            const cells = await splitGrid(img, state.cutGrid);
+            results.push({
+              imageName: info.name,
+              cells: cells.map(c => ({ blob: c.blob, index: c.index }))
+            });
+          }
+          state.splitResults = results;
+          state.currentSplitImageIndex = 0;
+          state.resultType = 'split';
+          state.view = 'result';
+          state.notify('view');
+        } else {
+          const loaded = await Promise.all(state.images.map(info =>
+            new Promise<HTMLImageElement>((resolve, reject) => {
+              const img = new Image();
+              img.onload = () => resolve(img);
+              img.onerror = () => reject(new Error('加载失败: ' + info.name));
+              img.src = info.src;
+            })
+          ));
 
-        const result = await stitchImages(loaded, {
-          direction: state.stitchMode === 'DIRECT_HORIZONTAL' ? 'HORIZONTAL' : 'VERTICAL',
-          spacing: state.imageSpacing,
-          spacingColor: state.spacingColor,
-          overlayEnabled: state.overlayMode === 'ENABLED',
-          overlayArea: state.overlayArea,
-          widthScale: state.widthScale
-        });
+          const result = await stitchImages(loaded, {
+            direction: state.stitchMode === 'DIRECT_HORIZONTAL' ? 'HORIZONTAL' : 'VERTICAL',
+            spacing: state.imageSpacing,
+            spacingColor: state.spacingColor,
+            overlayEnabled: state.overlayMode === 'ENABLED',
+            overlayArea: state.overlayArea,
+            widthScale: state.widthScale
+          });
 
-        const mime = state.outputFormat === 'jpeg' ? 'image/jpeg' : 'image/png';
-        const blob = await new Promise<Blob>(resolve => {
-          result.canvas.toBlob(b => resolve(b!), mime, state.outputFormat === 'jpeg' ? state.outputQuality / 100 : undefined);
-        });
+          const mime = state.outputFormat === 'jpeg' ? 'image/jpeg' : 'image/png';
+          const blob = await new Promise<Blob>(resolve => {
+            result.canvas.toBlob(b => resolve(b!), mime, state.outputFormat === 'jpeg' ? state.outputQuality / 100 : undefined);
+          });
 
-        state.resultType = 'stitch';
-        state.resultBlob = blob;
-        state.resultFormat = state.outputFormat;
-        state.view = 'result';
-        state.notify('view');
+          state.resultType = 'stitch';
+          state.resultBlob = blob;
+          state.resultFormat = state.outputFormat;
+          state.view = 'result';
+          state.notify('view');
+        }
+      } catch (e) {
+        alert('处理失败: ' + (e instanceof Error ? e.message : String(e)));
+      } finally {
+        hide();
       }
-    } catch (e) {
-      alert('处理失败: ' + (e instanceof Error ? e.message : String(e)));
-    } finally {
-      hide();
+    });
+    scrollArea.appendChild(actionBar);
+
+    const stripContainer = document.createElement('div');
+    stripContainer.id = 'strip-container';
+    stripContainer.style.display = 'none';
+    scrollArea.appendChild(stripContainer);
+
+    function updateUI(): void {
+      dropContainer.innerHTML = '';
+      const dz = renderDropZoneCard(files => loadImages(files), state.images.length > 0);
+      dropContainer.appendChild(dz);
+
+      const hasImages = state.images.length > 0;
+      stripContainer.style.display = hasImages ? '' : 'none';
+      stripContainer.innerHTML = '';
+      if (hasImages) {
+        const strip = renderImageStrip();
+        stripContainer.appendChild(strip);
+      }
     }
-  });
-  scrollArea.appendChild(actionBar);
 
-  // Image strip (hidden when no images)
-  const stripContainer = document.createElement('div');
-  stripContainer.id = 'strip-container';
-  stripContainer.style.display = 'none';
-  scrollArea.appendChild(stripContainer);
+    state.on('images', updateUI);
+    updateUI();
 
-  function updateUI(): void {
-    // Drop zone
-    dropContainer.innerHTML = '';
-    const dz = renderDropZoneCard(files => loadImages(files), state.images.length > 0);
-    dropContainer.appendChild(dz);
-
-    // Strip
-    const hasImages = state.images.length > 0;
-    stripContainer.style.display = hasImages ? '' : 'none';
-    stripContainer.innerHTML = '';
-    if (hasImages) {
-      const strip = renderImageStrip();
-      stripContainer.appendChild(strip);
-    }
+    container.appendChild(scrollArea);
+  } catch (e) {
+    console.error('[MainView] ERROR:', e);
   }
-
-  state.on('images', updateUI);
-  updateUI();
 }

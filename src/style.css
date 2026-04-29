@@ -130,6 +130,7 @@ input[type="number"]:focus {
 .top-bar .logo .circle {
   width: 10px;
   height: 10px;
+  border: 1.5px solid transparent;
   border-radius: 50%;
 }
 
