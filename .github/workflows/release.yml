@@ -54,7 +54,8 @@ jobs:
           else
             RANGE="$PREV_TAG...$CURRENT_TAG"
           fi
-          bash .github/scripts/gen_release_notes.sh -r "$RANGE" -o release.md
+          bash .github/scripts/gen_release_notes.sh -r "$RANGE" -o release.md || \
+            echo "Chimera Web ${CURRENT_TAG}" > release.md
 
       - name: Create Release
         uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda
