@@ -225,7 +225,7 @@ function renderStitchParams(): HTMLElement {
   const spInput = createNumberInput('spacing-input', state.imageSpacing, 0, 200);
   spInput.addEventListener('change', () => saveImageSpacing(Number(spInput.value)));
   spRow.appendChild(spInput);
-  spRow.appendChild(createLabel('填充色'));
+  spRow.appendChild(createLabel('间隔填充色'));
   const cp = renderColorPicker(state.spacingColor, color => saveSpacingColor(color));
   spRow.appendChild(cp);
   card.appendChild(spRow);
@@ -259,7 +259,7 @@ function renderOutputParams(): HTMLElement {
   qlRow.className = 'param-row';
   qlRow.id = 'quality-row';
   qlRow.style.display = state.outputFormat === 'jpeg' ? '' : 'none';
-  qlRow.appendChild(createLabel('质量'));
+  qlRow.appendChild(createLabel('输出质量'));
   const qlInput = createNumberInput('quality-input', state.outputQuality, 1, 100);
   qlInput.addEventListener('change', () => saveOutputQuality(Number(qlInput.value)));
   qlRow.appendChild(qlInput);

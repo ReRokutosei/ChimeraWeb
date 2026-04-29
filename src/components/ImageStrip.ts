@@ -14,7 +14,7 @@ export function renderImageStrip(): HTMLElement {
     strip.innerHTML = '';
     if (state.images.length === 0) return;
 
-    for (const info of state.images) {
+    state.images.forEach((info, idx) => {
       const thumb = document.createElement('div');
       thumb.className = 'thumb' + (info.id === state.images[state.currentImageIndex]?.id ? ' active' : '');
       thumb.dataset.id = info.id;
@@ -24,6 +24,10 @@ export function renderImageStrip(): HTMLElement {
       img.src = info.src;
       img.alt = info.name;
       img.draggable = false;
+
+      const number = document.createElement('span');
+      number.className = 'thumb-number';
+      number.textContent = String(idx + 1);
 
       const removeBtn = document.createElement('button');
       removeBtn.className = 'remove-btn';
@@ -35,16 +39,16 @@ export function renderImageStrip(): HTMLElement {
       });
 
       thumb.appendChild(img);
+      thumb.appendChild(number);
       thumb.appendChild(removeBtn);
       thumb.addEventListener('click', () => {
-        const idx = state.images.findIndex(i => i.id === info.id);
-        if (idx >= 0) {
-          state.currentImageIndex = idx;
+        const i = state.images.findIndex(x => x.id === info.id);
+        if (i >= 0) {
+          state.currentImageIndex = i;
           state.notify('currentImage');
         }
       });
 
-      // Drag reorder
       thumb.addEventListener('dragstart', e => {
         draggedId = info.id;
         e.dataTransfer!.effectAllowed = 'move';
@@ -60,23 +64,20 @@ export function renderImageStrip(): HTMLElement {
         strip.querySelectorAll('.thumb').forEach(el => el.classList.remove('drag-over'));
         thumb.classList.add('drag-over');
       });
-      thumb.addEventListener('dragleave', () => {
-        thumb.classList.remove('drag-over');
-      });
+      thumb.addEventListener('dragleave', () => thumb.classList.remove('drag-over'));
       thumb.addEventListener('drop', e => {
         e.preventDefault();
         thumb.classList.remove('drag-over');
         if (!draggedId || draggedId === info.id) return;
 
-        const fromIdx = state.images.findIndex(i => i.id === draggedId);
-        const toIdx = state.images.findIndex(i => i.id === info.id);
+        const fromIdx = state.images.findIndex(x => x.id === draggedId);
+        const toIdx = state.images.findIndex(x => x.id === info.id);
         if (fromIdx < 0 || toIdx < 0) return;
 
         const newImages = [...state.images];
         const [moved] = newImages.splice(fromIdx, 1);
         newImages.splice(toIdx, 0, moved);
 
-        // Update currentImageIndex if needed
         let newIdx = state.currentImageIndex;
         if (state.currentImageIndex === fromIdx) newIdx = toIdx;
         else if (fromIdx < state.currentImageIndex && toIdx >= state.currentImageIndex) newIdx--;
@@ -88,7 +89,7 @@ export function renderImageStrip(): HTMLElement {
       });
 
       strip.appendChild(thumb);
-    }
+    });
   }
 
   function render(): void {
