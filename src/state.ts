@@ -1,0 +1,48 @@
+export interface ImageInfo {
+  id: string;
+  name: string;
+  src: string;
+  width: number;
+  height: number;
+}
+
+type Listener = () => void;
+
+class AppState {
+  private _listeners = new Map<string, Set<Listener>>();
+
+  view: 'main' | 'result' = 'main';
+  isCutMode = false;
+  cutGrid = 3;
+  images: ImageInfo[] = [];
+  currentImageIndex = 0;
+
+  resultType: 'stitch' | 'split' | null = null;
+
+  resultBlob: Blob | null = null;
+  resultFormat: 'png' | 'jpeg' = 'png';
+
+  resultCells: { blob: Blob; index: number }[] | null = null;
+
+  spacingColor = '#000000';
+  outputFormat: 'png' | 'jpeg' = 'png';
+
+  on(key: string, fn: Listener): void {
+    let set = this._listeners.get(key);
+    if (!set) {
+      set = new Set();
+      this._listeners.set(key, set);
+    }
+    set.add(fn);
+  }
+
+  off(key: string, fn: Listener): void {
+    this._listeners.get(key)?.delete(fn);
+  }
+
+  notify(key: string): void {
+    this._listeners.get(key)?.forEach(fn => fn());
+  }
+}
+
+export const state = new AppState();
