@@ -518,8 +518,8 @@ input[type="number"]:focus {
   grid-template-columns: repeat(3, 1fr);
 }
 
-.split-grid-4 {
-  grid-template-columns: repeat(4, 1fr);
+.split-grid-2 {
+  grid-template-columns: repeat(2, 1fr);
 }
 
 .split-grid .cell img {

@@ -106,16 +106,6 @@ function renderModeSection(): HTMLElement {
   );
   row.appendChild(modeCtrl);
 
-  const gridCtrl = renderSegmentedControl(
-    [{ label: '3×3', value: '3' }, { label: '4×4', value: '4' }],
-    String(state.cutGrid),
-    val => { saveCutGrid(Number(val)); }
-  );
-  gridCtrl.className += ' grid-ctrl';
-  gridCtrl.classList.toggle('hidden', !state.isCutMode);
-  state.on('mode', () => gridCtrl.classList.toggle('hidden', !state.isCutMode));
-
-  row.appendChild(gridCtrl);
   section.appendChild(row);
   return section;
 }
@@ -233,6 +223,25 @@ function renderStitchParams(): HTMLElement {
   state.on('overlayMode', () => {
     spRow.style.display = state.overlayMode === 'ENABLED' ? 'none' : '';
   });
+
+  return card;
+}
+
+function renderCutParams(): HTMLElement {
+  const card = document.createElement('div');
+  card.className = 'params-card';
+  card.id = 'cut-params';
+
+  const row = document.createElement('div');
+  row.className = 'param-row';
+  row.appendChild(createLabel('切割宫格'));
+  const gridCtrl = renderSegmentedControl(
+    [{ label: '2×2', value: '2' }, { label: '3×3', value: '3' }],
+    String(state.cutGrid),
+    val => { saveCutGrid(Number(val)); }
+  );
+  row.appendChild(gridCtrl);
+  card.appendChild(row);
 
   return card;
 }
@@ -381,6 +390,12 @@ export async function renderMainView(container: HTMLElement): Promise<void> {
     stitchParams.classList.toggle('hidden', state.isCutMode);
     state.on('mode', () => stitchParams.classList.toggle('hidden', state.isCutMode));
     paramsScroll.appendChild(stitchParams);
+
+    const cutParams = renderCutParams();
+    cutParams.id = 'cut-params';
+    cutParams.classList.toggle('hidden', !state.isCutMode);
+    state.on('mode', () => cutParams.classList.toggle('hidden', !state.isCutMode));
+    paramsScroll.appendChild(cutParams);
 
     paramsScroll.appendChild(renderOutputParams());
     rightPanel.appendChild(paramsScroll);

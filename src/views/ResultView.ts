@@ -120,7 +120,7 @@ function renderSplitResultUI(container: HTMLElement): void {
 
   const grid = document.createElement('div');
   grid.className = 'split-grid';
-  grid.classList.add(state.cutGrid === 3 ? 'split-grid-3' : 'split-grid-4');
+  grid.classList.add(state.cutGrid === 3 ? 'split-grid-3' : 'split-grid-2');
 
   for (const cell of current.cells) {
     const cellDiv = document.createElement('div');
