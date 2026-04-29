@@ -227,6 +227,8 @@ function renderStitchParams(): HTMLElement {
 
   const spRow = document.createElement('div');
   spRow.className = 'param-row';
+  spRow.id = 'spacing-row';
+  spRow.style.display = state.overlayMode === 'ENABLED' ? 'none' : '';
   spRow.appendChild(createLabel('间隔像素'));
   const spInput = createNumberInput('spacing-input', state.imageSpacing, 0, 200);
   spInput.addEventListener('change', () => saveImageSpacing(Number(spInput.value)));
@@ -235,6 +237,10 @@ function renderStitchParams(): HTMLElement {
   const cp = renderColorPicker(state.spacingColor, color => saveSpacingColor(color));
   spRow.appendChild(cp);
   card.appendChild(spRow);
+
+  state.on('overlayMode', () => {
+    spRow.style.display = state.overlayMode === 'ENABLED' ? 'none' : '';
+  });
 
   return card;
 }
