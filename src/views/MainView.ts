@@ -351,26 +351,47 @@ export async function renderMainView(container: HTMLElement): Promise<void> {
     container.innerHTML = '';
     loadSettings();
 
-    const scrollArea = document.createElement('div');
-    scrollArea.className = 'scroll-area';
+    // Top bar
+    container.appendChild(renderTopBar());
 
-    scrollArea.appendChild(renderTopBar());
+    // Main content: 60/40 split
+    const mainContent = document.createElement('div');
+    mainContent.className = 'main-content';
+
+    // ─── Left Panel (60%) ───
+    const leftPanel = document.createElement('div');
+    leftPanel.className = 'left-panel';
 
     const dropContainer = document.createElement('div');
     dropContainer.id = 'drop-container';
-    scrollArea.appendChild(dropContainer);
+    dropContainer.className = 'drop-area';
+    leftPanel.appendChild(dropContainer);
 
-    scrollArea.appendChild(renderModeSection());
+    const stripContainer = document.createElement('div');
+    stripContainer.id = 'strip-container';
+    stripContainer.className = 'strip-wrapper';
+    stripContainer.style.display = 'none';
+    leftPanel.appendChild(stripContainer);
+
+    mainContent.appendChild(leftPanel);
+
+    // ─── Right Panel (40%) ───
+    const rightPanel = document.createElement('div');
+    rightPanel.className = 'right-panel';
+
+    const paramsScroll = document.createElement('div');
+    paramsScroll.className = 'params-scroll';
+
+    paramsScroll.appendChild(renderModeSection());
 
     const stitchParams = renderStitchParams();
     stitchParams.id = 'stitch-params';
     stitchParams.classList.toggle('hidden', state.isCutMode);
     state.on('mode', () => stitchParams.classList.toggle('hidden', state.isCutMode));
-    scrollArea.appendChild(stitchParams);
+    paramsScroll.appendChild(stitchParams);
 
-    const outputParams = renderOutputParams();
-    outputParams.id = 'output-params';
-    scrollArea.appendChild(outputParams);
+    paramsScroll.appendChild(renderOutputParams());
+    rightPanel.appendChild(paramsScroll);
 
     const actionBar = renderActionBar(async () => {
       if (state.images.length === 0) return;
@@ -434,19 +455,18 @@ export async function renderMainView(container: HTMLElement): Promise<void> {
         hide();
       }
     });
-    scrollArea.appendChild(actionBar);
+    rightPanel.appendChild(actionBar);
 
-    const stripContainer = document.createElement('div');
-    stripContainer.id = 'strip-container';
-    stripContainer.style.display = 'none';
-    scrollArea.appendChild(stripContainer);
+    mainContent.appendChild(rightPanel);
+    container.appendChild(mainContent);
 
     function updateUI(): void {
       dropContainer.innerHTML = '';
-      const dz = renderDropZoneCard(files => loadImages(files), state.images.length > 0);
-      dropContainer.appendChild(dz);
-
       const hasImages = state.images.length > 0;
+      const dz = renderDropZoneCard(files => loadImages(files), hasImages);
+      dropContainer.appendChild(dz);
+      dropContainer.style.flex = hasImages ? '0 0 auto' : '1';
+
       stripContainer.style.display = hasImages ? '' : 'none';
       stripContainer.innerHTML = '';
       if (hasImages) {
@@ -457,8 +477,6 @@ export async function renderMainView(container: HTMLElement): Promise<void> {
 
     state.on('images', updateUI);
     updateUI();
-
-    container.appendChild(scrollArea);
   } catch (e) {
     console.error('[MainView] ERROR:', e);
   }

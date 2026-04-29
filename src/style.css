@@ -53,7 +53,10 @@ body {
 #app {
   max-width: 900px;
   margin: 0 auto;
-  padding: 0 20px 40px;
+  padding: 0 20px;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 button {
@@ -541,6 +544,58 @@ input[type="number"]:focus {
 
 @keyframes spin {
   to { transform: rotate(360deg); }
+}
+
+/* ─── 60/40 Split Layout ─── */
+
+.main-content {
+  display: flex;
+  gap: 16px;
+  flex: 1;
+  min-height: 0;
+  padding-top: 16px;
+}
+
+.left-panel {
+  flex: 0 0 60%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+}
+
+.right-panel {
+  flex: 0 0 calc(40% - 16px);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+}
+
+.drop-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.drop-area .drop-zone {
+  min-height: 140px;
+  margin-top: 0;
+  flex: 1;
+}
+
+.strip-wrapper {
+  flex-shrink: 0;
+}
+
+.params-scroll {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
 }
 
 /* ─── Responsive ─── */
