@@ -53,7 +53,7 @@ body {
 #app {
   max-width: 900px;
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 0 20px 40px;
 }
 
 button {
@@ -67,9 +67,9 @@ button {
 
 select {
   font-family: inherit;
-  font-size: inherit;
+  font-size: 13px;
   color: var(--text);
-  background: var(--bg-secondary);
+  background: var(--bg);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 6px 10px;
@@ -80,6 +80,29 @@ select:focus {
   outline: 2px solid var(--primary);
   outline-offset: 1px;
 }
+
+input[type="number"] {
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 6px 8px;
+  width: 64px;
+  text-align: center;
+}
+
+input[type="number"]:focus {
+  outline: 2px solid var(--primary);
+  outline-offset: 1px;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* ─── Top Bar ─── */
 
 .top-bar {
   display: flex;
@@ -94,7 +117,7 @@ select:focus {
 .top-bar .logo {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   font-weight: 600;
   font-size: 16px;
 }
@@ -107,7 +130,6 @@ select:focus {
 .top-bar .logo .circle {
   width: 10px;
   height: 10px;
-  border: 1.5px solid var(--primary);
   border-radius: 50%;
 }
 
@@ -148,19 +170,21 @@ select:focus {
   background: var(--bg-secondary);
 }
 
+/* ─── Drop Zone ─── */
+
 .drop-zone {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 12px;
-  min-height: 280px;
+  min-height: 200px;
   border: 2px dashed var(--drop-border);
   border-radius: var(--radius);
   background: var(--drop-bg);
   transition: border-color var(--transition), background var(--transition);
   cursor: pointer;
-  margin-top: 24px;
+  margin-top: 16px;
 }
 
 .drop-zone.dragover {
@@ -169,41 +193,94 @@ select:focus {
 }
 
 .drop-zone .icon {
-  width: 48px;
-  height: 48px;
+  width: 40px;
+  height: 40px;
   color: var(--text-secondary);
 }
 
 .drop-zone .hint {
-  font-size: 15px;
+  font-size: 14px;
   color: var(--text-secondary);
   text-align: center;
   line-height: 1.6;
 }
 
 .drop-zone .hint small {
-  font-size: 13px;
+  font-size: 12px;
   opacity: 0.7;
 }
 
-.mode-bar {
-  display: flex;
+.add-image-btn {
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
+  padding: 8px 16px;
+  margin-top: 12px;
+  border: 1px dashed var(--drop-border);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: 13px;
+  transition: border-color var(--transition), color var(--transition);
+}
+
+.add-image-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+/* ─── Mode Section ─── */
+
+.mode-section {
   margin-top: 16px;
 }
 
+/* ─── Params Card ─── */
+
+.params-card {
+  margin-top: 12px;
+  padding: 16px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.param-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.param-label {
+  font-size: 13px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  min-width: fit-content;
+}
+
+.num-input {
+  width: 64px;
+}
+
+.fmt-select {
+  width: 80px;
+}
+
+/* ─── Segmented Control ─── */
+
 .segmented-control {
   display: flex;
-  background: var(--bg-secondary);
-  border-radius: 20px;
+  background: var(--bg-tertiary);
+  border-radius: 8px;
   padding: 2px;
   gap: 2px;
 }
 
 .segmented-btn {
-  padding: 6px 16px;
-  border-radius: 18px;
+  padding: 5px 14px;
+  border-radius: 6px;
   font-size: 13px;
   font-weight: 500;
   color: var(--text-secondary);
@@ -212,17 +289,40 @@ select:focus {
 }
 
 .segmented-btn.active {
-  background: var(--primary);
-  color: var(--primary-text);
+  background: var(--bg);
+  color: var(--text);
+  box-shadow: 0 1px 3px var(--shadow);
 }
 
 .segmented-btn:not(.active):hover {
   color: var(--text);
 }
 
+/* ─── Color Picker ─── */
+
+.color-picker-wrapper input[type="color"] {
+  width: 32px;
+  height: 32px;
+  border: 2px solid var(--border);
+  border-radius: 50%;
+  cursor: pointer;
+  padding: 0;
+  background: none;
+}
+
+.color-picker-wrapper input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.color-picker-wrapper input[type="color"]::-webkit-color-swatch {
+  border: none;
+  border-radius: 50%;
+}
+
+/* ─── Image Strip ─── */
+
 .image-strip-container {
-  margin-top: 16px;
-  position: relative;
+  margin-top: 12px;
 }
 
 .image-strip {
@@ -251,8 +351,8 @@ select:focus {
 .image-strip .thumb {
   flex-shrink: 0;
   scroll-snap-align: start;
-  width: 120px;
-  height: 80px;
+  width: 100px;
+  height: 70px;
   border-radius: var(--radius-sm);
   overflow: hidden;
   border: 2px solid transparent;
@@ -293,52 +393,17 @@ select:focus {
   opacity: 1;
 }
 
-.settings-bar {
+/* ─── Action Bar ─── */
+
+.action-bar {
   display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-top: 16px;
-  padding: 12px 16px;
-  background: var(--bg-secondary);
-  border-radius: var(--radius-sm);
-}
-
-.settings-bar .label {
-  font-size: 13px;
-  color: var(--text-secondary);
-  white-space: nowrap;
-}
-
-.settings-bar .spacing-option {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.color-picker-wrapper input[type="color"] {
-  width: 32px;
-  height: 32px;
-  border: 2px solid var(--border);
-  border-radius: 50%;
-  cursor: pointer;
-  padding: 0;
-  background: none;
-}
-
-.color-picker-wrapper input[type="color"]::-webkit-color-swatch-wrapper {
-  padding: 0;
-}
-
-.color-picker-wrapper input[type="color"]::-webkit-color-swatch {
-  border: none;
-  border-radius: 50%;
-}
-
-.action-btn {
-  display: block;
-  width: 100%;
-  padding: 14px;
+  gap: 12px;
   margin-top: 20px;
+}
+
+.action-bar .action-btn {
+  flex: 1;
+  padding: 14px;
   background: var(--primary);
   color: var(--primary-text);
   border-radius: var(--radius);
@@ -348,18 +413,27 @@ select:focus {
   transition: background var(--transition);
 }
 
-.action-btn:hover {
+.action-bar .action-btn:hover {
   background: var(--primary-hover);
 }
 
-.action-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
+.clear-btn {
+  padding: 14px 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: border-color var(--transition), color var(--transition);
 }
 
-.action-btn:disabled:hover {
-  background: var(--primary);
+.clear-btn:hover {
+  border-color: var(--danger);
+  color: var(--danger);
 }
+
+/* ─── Result View ─── */
 
 .result-container {
   display: flex;
@@ -425,6 +499,8 @@ select:focus {
   cursor: pointer;
 }
 
+/* ─── Loading ─── */
+
 .loading-overlay {
   position: fixed;
   inset: 0;
@@ -448,28 +524,13 @@ select:focus {
   to { transform: rotate(360deg); }
 }
 
-.spacing-input {
-  width: 64px;
-  padding: 4px 8px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: var(--bg);
-  color: var(--text);
-  font-size: 13px;
-  text-align: center;
-}
-
-.spacing-input:focus {
-  outline: 2px solid var(--primary);
-  outline-offset: 1px;
-}
+/* ─── Responsive ─── */
 
 @media (max-width: 600px) {
   #app {
     padding: 0 12px;
   }
-  .settings-bar {
-    flex-wrap: wrap;
-    gap: 10px;
+  .param-row {
+    gap: 8px;
   }
 }

@@ -18,14 +18,18 @@ class AppState {
   currentImageIndex = 0;
 
   resultType: 'stitch' | 'split' | null = null;
-
   resultBlob: Blob | null = null;
   resultFormat: 'png' | 'jpeg' = 'png';
-
   resultCells: { blob: Blob; index: number }[] | null = null;
 
+  stitchMode: 'DIRECT_VERTICAL' | 'DIRECT_HORIZONTAL' = 'DIRECT_VERTICAL';
+  overlayMode: 'DISABLED' | 'ENABLED' = 'DISABLED';
+  overlayArea = 10;
+  widthScale: 'NONE' | 'MIN_WIDTH' | 'MAX_WIDTH' = 'MIN_WIDTH';
+  imageSpacing = 0;
   spacingColor = '#000000';
   outputFormat: 'png' | 'jpeg' = 'png';
+  outputQuality = 90;
 
   on(key: string, fn: Listener): void {
     let set = this._listeners.get(key);

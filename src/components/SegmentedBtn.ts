@@ -16,7 +16,6 @@ export function renderSegmentedControl(
     btn.className = 'segmented-btn' + (opt.value === activeValue ? ' active' : '');
     btn.textContent = opt.label;
     btn.addEventListener('click', () => {
-      if (opt.value === activeValue) return;
       container.querySelectorAll('.segmented-btn').forEach(el => el.classList.remove('active'));
       btn.classList.add('active');
       onChange(opt.value);

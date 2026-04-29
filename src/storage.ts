@@ -1,32 +1,51 @@
 import { state } from './state';
 
-const KEY_SPACING_COLOR = 'chimera_spacing_color';
-const KEY_OUTPUT_FORMAT = 'chimera_output_format';
-const KEY_CUT_GRID = 'chimera_cut_grid';
+function get<T>(key: string, fallback: T): T {
+  const v = localStorage.getItem(key);
+  if (v === null) return fallback;
+  try { return JSON.parse(v) as T; } catch { return v as T; }
+}
+
+function set<T>(key: string, value: T): void {
+  localStorage.setItem(key, typeof value === 'string' ? value : JSON.stringify(value));
+}
 
 export function loadSettings(): void {
-  const color = localStorage.getItem(KEY_SPACING_COLOR);
-  if (color) state.spacingColor = color;
-
-  const fmt = localStorage.getItem(KEY_OUTPUT_FORMAT);
-  if (fmt === 'png' || fmt === 'jpeg') state.outputFormat = fmt;
-
-  const grid = localStorage.getItem(KEY_CUT_GRID);
-  if (grid === '3' || grid === '4') state.cutGrid = Number(grid);
+  state.stitchMode = get('stitch_mode', 'DIRECT_VERTICAL');
+  state.widthScale = get('width_scale', 'MIN_WIDTH');
+  state.overlayArea = get('overlay_area', 10);
+  state.overlayMode = get('overlay_mode', 'DISABLED');
+  state.imageSpacing = get('image_spacing', 0);
+  state.spacingColor = get('spacing_color', '#000000');
+  state.cutGrid = get('cut_grid', 3);
+  state.outputFormat = get('output_format', 'png');
+  state.outputQuality = get('output_quality', 90);
 }
 
-export function saveSpacingColor(color: string): void {
-  state.spacingColor = color;
-  localStorage.setItem(KEY_SPACING_COLOR, color);
-  state.notify('spacingColor');
+export function saveStitchMode(v: typeof state.stitchMode): void {
+  state.stitchMode = v; set('stitch_mode', v); state.notify('stitchMode');
 }
-
-export function saveOutputFormat(fmt: 'png' | 'jpeg'): void {
-  state.outputFormat = fmt;
-  localStorage.setItem(KEY_OUTPUT_FORMAT, fmt);
+export function saveWidthScale(v: typeof state.widthScale): void {
+  state.widthScale = v; set('width_scale', v); state.notify('widthScale');
 }
-
-export function saveCutGrid(grid: number): void {
-  state.cutGrid = grid;
-  localStorage.setItem(KEY_CUT_GRID, String(grid));
+export function saveOverlayMode(v: typeof state.overlayMode): void {
+  state.overlayMode = v; set('overlay_mode', v); state.notify('overlayMode');
+}
+export function saveOverlayArea(v: number): void {
+  state.overlayArea = v; set('overlay_area', v);
+}
+export function saveImageSpacing(v: number): void {
+  state.imageSpacing = v; set('image_spacing', v);
+}
+export function saveSpacingColor(v: string): void {
+  state.spacingColor = v; set('spacing_color', v); state.notify('spacingColor');
+}
+export function saveCutGrid(v: number): void {
+  state.cutGrid = v; set('cut_grid', v);
+}
+export function saveOutputFormat(v: 'png' | 'jpeg'): void {
+  state.outputFormat = v; set('output_format', v);
+}
+export function saveOutputQuality(v: number): void {
+  state.outputQuality = v; set('output_quality', v);
 }

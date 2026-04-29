@@ -12,7 +12,6 @@ function downloadBlob(blob: Blob, filename: string): void {
 export function renderResultView(container: HTMLElement): void {
   container.innerHTML = '';
 
-  // Top bar with back button
   const bar = document.createElement('div');
   bar.className = 'top-bar';
 
@@ -34,18 +33,15 @@ export function renderResultView(container: HTMLElement): void {
 
   bar.appendChild(backBtn);
   bar.appendChild(title);
-  bar.appendChild(document.createElement('div')); // spacer
+  bar.appendChild(document.createElement('div'));
   container.appendChild(bar);
 
-  // Result content
   const resultContainer = document.createElement('div');
   resultContainer.className = 'result-container';
 
   if (state.resultType === 'stitch' && state.resultBlob) {
-    // Single image result
     const previewArea = document.createElement('div');
     previewArea.className = 'preview-area';
-
     const blobUrl = URL.createObjectURL(state.resultBlob);
     const img = document.createElement('img');
     img.src = blobUrl;
@@ -53,37 +49,38 @@ export function renderResultView(container: HTMLElement): void {
     previewArea.appendChild(img);
     resultContainer.appendChild(previewArea);
 
-    // Download buttons
     const actions = document.createElement('div');
     actions.className = 'result-actions';
 
-    const downloadPng = document.createElement('button');
-    downloadPng.className = 'download-btn';
-    downloadPng.textContent = '下载为 PNG';
-    downloadPng.addEventListener('click', async () => {
+    const dPng = document.createElement('button');
+    dPng.className = 'download-btn';
+    dPng.textContent = '下载为 PNG';
+    dPng.addEventListener('click', () => {
       const blob = state.resultBlob!;
-      const newBlob = state.resultFormat === 'png'
-        ? blob
-        : await convertBlobFormat(blob, 'image/png');
-      downloadBlob(newBlob, `chimera_${Date.now()}.png`);
+      if (state.resultFormat === 'png') {
+        downloadBlob(blob, `chimera_${Date.now()}.png`);
+      } else {
+        convertBlobFormat(blob, 'image/png').then(b => downloadBlob(b, `chimera_${Date.now()}.png`));
+      }
     });
-    actions.appendChild(downloadPng);
+    actions.appendChild(dPng);
 
-    const downloadJpeg = document.createElement('button');
-    downloadJpeg.className = 'download-btn';
-    downloadJpeg.textContent = '下载为 JPEG';
-    downloadJpeg.addEventListener('click', async () => {
+    const dJpeg = document.createElement('button');
+    dJpeg.className = 'download-btn';
+    dJpeg.textContent = '下载为 JPEG';
+    dJpeg.addEventListener('click', () => {
       const blob = state.resultBlob!;
-      const newBlob = state.resultFormat === 'jpeg'
-        ? blob
-        : await convertBlobFormat(blob, 'image/jpeg');
-      downloadBlob(newBlob, `chimera_${Date.now()}.jpg`);
+      if (state.resultFormat === 'jpeg') {
+        downloadBlob(blob, `chimera_${Date.now()}.jpg`);
+      } else {
+        convertBlobFormat(blob, 'image/jpeg', state.outputQuality).then(b => downloadBlob(b, `chimera_${Date.now()}.jpg`));
+      }
     });
-    actions.appendChild(downloadJpeg);
+    actions.appendChild(dJpeg);
 
     resultContainer.appendChild(actions);
+
   } else if (state.resultType === 'split' && state.resultCells) {
-    // Grid of cells
     const grid = document.createElement('div');
     grid.className = 'split-grid';
     grid.classList.add(state.cutGrid === 3 ? 'split-grid-3' : 'split-grid-4');
@@ -91,23 +88,17 @@ export function renderResultView(container: HTMLElement): void {
     for (const cell of state.resultCells) {
       const cellDiv = document.createElement('div');
       cellDiv.className = 'cell';
-
       const url = URL.createObjectURL(cell.blob);
       const img = document.createElement('img');
       img.src = url;
       img.alt = `cell_${cell.index}`;
-
-      img.addEventListener('click', () => {
-        downloadBlob(cell.blob, `chimera_cell_${cell.index + 1}.png`);
-      });
+      img.addEventListener('click', () => downloadBlob(cell.blob, `chimera_cell_${cell.index + 1}.png`));
       img.title = '点击下载';
-
       cellDiv.appendChild(img);
       grid.appendChild(cellDiv);
     }
     resultContainer.appendChild(grid);
 
-    // Download all as ZIP would need JSZip dependency—download individually for now
     const hint = document.createElement('p');
     hint.style.cssText = 'margin-top:12px;font-size:13px;color:var(--text-secondary);text-align:center;';
     hint.textContent = '点击任意单元格即可单独下载';
@@ -117,7 +108,7 @@ export function renderResultView(container: HTMLElement): void {
   container.appendChild(resultContainer);
 }
 
-async function convertBlobFormat(blob: Blob, mime: string): Promise<Blob> {
+async function convertBlobFormat(blob: Blob, mime: string, quality?: number): Promise<Blob> {
   const img = await createImageBitmap(blob);
   const canvas = document.createElement('canvas');
   canvas.width = img.width;
@@ -126,6 +117,7 @@ async function convertBlobFormat(blob: Blob, mime: string): Promise<Blob> {
   ctx.drawImage(img, 0, 0);
   img.close();
   return new Promise(resolve => {
-    canvas.toBlob(b => resolve(b!), mime);
+    const q = quality && mime === 'image/jpeg' ? quality / 100 : undefined;
+    canvas.toBlob(b => resolve(b!), mime, q);
   });
 }
