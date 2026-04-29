@@ -24,7 +24,7 @@ class AppState {
 
   resultType: 'stitch' | 'split' | null = null;
   resultBlob: Blob | null = null;
-  resultFormat: 'png' | 'jpeg' = 'png';
+  resultFormat: 'png' | 'jpeg' | 'webp' = 'png';
 
   splitResults: SplitImageResult[] | null = null;
   currentSplitImageIndex = 0;
@@ -35,7 +35,7 @@ class AppState {
   widthScale: 'NONE' | 'MIN_WIDTH' | 'MAX_WIDTH' = 'MIN_WIDTH';
   imageSpacing = 0;
   spacingColor = '#000000';
-  outputFormat: 'png' | 'jpeg' = 'png';
+  outputFormat: 'png' | 'jpeg' | 'webp' = 'png';
   outputQuality = 90;
 
   on(key: string, fn: Listener): void {

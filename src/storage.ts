@@ -43,7 +43,7 @@ export function saveSpacingColor(v: string): void {
 export function saveCutGrid(v: number): void {
   state.cutGrid = v; set('cut_grid', v);
 }
-export function saveOutputFormat(v: 'png' | 'jpeg'): void {
+export function saveOutputFormat(v: typeof state.outputFormat): void {
   state.outputFormat = v; set('output_format', v);
 }
 export function saveOutputQuality(v: number): void {

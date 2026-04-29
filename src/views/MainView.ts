@@ -77,7 +77,7 @@ function openFilePicker(onFiles: (files: File[]) => void): void {
   const input = document.createElement('input');
   input.type = 'file';
   input.multiple = true;
-  input.accept = 'image/*';
+  input.accept = 'image/jpeg,image/png,image/webp';
   input.addEventListener('change', () => { if (input.files) onFiles(Array.from(input.files)); });
   input.click();
 }
@@ -257,7 +257,7 @@ function renderOutputParams(): HTMLElement {
 
   const fmtSelect = document.createElement('select');
   fmtSelect.className = 'fmt-select';
-  ['png', 'jpeg'].forEach(f => {
+  ['png', 'jpeg', 'webp'].forEach(f => {
     const opt = document.createElement('option');
     opt.value = f; opt.textContent = f.toUpperCase();
     if (f === state.outputFormat) opt.selected = true;
@@ -267,7 +267,7 @@ function renderOutputParams(): HTMLElement {
   const qlRow = document.createElement('div');
   qlRow.className = 'param-row';
   qlRow.id = 'quality-row';
-  qlRow.style.display = state.outputFormat === 'jpeg' ? '' : 'none';
+  qlRow.style.display = state.outputFormat === 'jpeg' || state.outputFormat === 'webp' ? '' : 'none';
   qlRow.appendChild(createLabel('输出质量'));
   const qlInput = createNumberInput('quality-input', state.outputQuality, 1, 100);
   qlInput.addEventListener('change', () => saveOutputQuality(Number(qlInput.value)));
@@ -275,9 +275,9 @@ function renderOutputParams(): HTMLElement {
   qlRow.appendChild(createLabel('%'));
 
   fmtSelect.addEventListener('change', () => {
-    const fmt = fmtSelect.value as 'png' | 'jpeg';
+    const fmt = fmtSelect.value as 'png' | 'jpeg' | 'webp';
     saveOutputFormat(fmt);
-    qlRow.style.display = fmt === 'jpeg' ? '' : 'none';
+    qlRow.style.display = fmt === 'jpeg' || fmt === 'webp' ? '' : 'none';
   });
 
   fmtRow.appendChild(fmtSelect);
@@ -445,9 +445,10 @@ export async function renderMainView(container: HTMLElement): Promise<void> {
             widthScale: state.widthScale
           });
 
-          const mime = state.outputFormat === 'jpeg' ? 'image/jpeg' : 'image/png';
+          const mime = state.outputFormat === 'png' ? 'image/png' : state.outputFormat === 'webp' ? 'image/webp' : 'image/jpeg';
+          const hasQuality = state.outputFormat === 'jpeg' || state.outputFormat === 'webp';
           const blob = await new Promise<Blob>(resolve => {
-            result.canvas.toBlob(b => resolve(b!), mime, state.outputFormat === 'jpeg' ? state.outputQuality / 100 : undefined);
+            result.canvas.toBlob(b => resolve(b!), mime, hasQuality ? state.outputQuality / 100 : undefined);
           });
 
           state.resultType = 'stitch';

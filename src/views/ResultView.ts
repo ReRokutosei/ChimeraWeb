@@ -63,7 +63,8 @@ function renderStitchResult(container: HTMLElement): void {
 
   const saveBtn = document.createElement('button');
   saveBtn.className = 'download-btn';
-  const ext = state.resultFormat === 'jpeg' ? 'jpg' : 'png';
+  const extMap: Record<string, string> = { png: 'png', jpeg: 'jpg', webp: 'webp' };
+  const ext = extMap[state.resultFormat] || 'png';
   saveBtn.textContent = `保存为 ${state.resultFormat.toUpperCase()}`;
   saveBtn.addEventListener('click', () => {
     downloadBlob(state.resultBlob!, `chimera_stitch_${Date.now()}.${ext}`);

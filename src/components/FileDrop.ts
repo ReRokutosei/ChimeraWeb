@@ -17,8 +17,9 @@ export function loadImages(files: File[]): void {
     }
   }
 
+  const allowed = ['image/jpeg', 'image/png', 'image/webp'];
   for (const file of remaining) {
-    if (!file.type.startsWith('image/')) continue;
+    if (!allowed.includes(file.type)) continue;
     const id = `img_${Date.now()}_${counter++}`;
     const url = URL.createObjectURL(file);
     const img = new Image();
