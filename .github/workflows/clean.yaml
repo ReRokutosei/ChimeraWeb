@@ -20,3 +20,12 @@ jobs:
           retain_days: 0
           keep_minimum_runs: 10
           delete_workflow_pattern: "Build and Publish Release"
+
+      - name: Keep recent pages deployment runs
+        uses: Mattraks/delete-workflow-runs@b3018382ca039b53d238908238bd35d1fb14f8ee
+        with:
+          token: ${{ secrets.PAT_TOKEN }}
+          repository: ${{ github.repository }}
+          retain_days: 0
+          keep_minimum_runs: 10
+          delete_workflow_pattern: "Deploy to GitHub Pages"
