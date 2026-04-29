@@ -29,6 +29,13 @@
 | 桌面包装 | Tauri v2（可选，Rust 后端） |
 | 存储 | localStorage（设置项） |
 
+## 安装要求
+
+- **系统**：Windows 10 或更高版本（x86_64）
+- **Chrome**: 147+，其他浏览器请自行测试
+- **Runtime**：WebView2（Windows 10+ 已预装）
+- **存储**：应用本体约 10 MB
+
 ## 快速开始
 
 ```bash
@@ -52,6 +59,12 @@ npm run tauri build  # → src-tauri/target/release/bundle/nsis/
 
 ![](./20260429205356.webp)
 
-## 许可证
+## 法律与隐私
 
-GNU General Public License v3.0
+- **隐私政策**：本应用不请求网络权限，不收集任何用户隐私，所有操作均在本地完成，详见 [隐私政策](./PrivacyPolicy_CN.md)
+- **免责声明**：应用按现状提供，不提供任何形式的担保，详见 [免责声明](./Disclaimer_CN.md)
+- **许可证**：本项目采用 GNU 通用公共许可证第3.0版（GPLv3）授权，详见 [LICENSE](../LICENSE)
+
+## 致谢
+
+应用图标由 [Freepik](https://www.freepik.com/icon/animal_13228011) 设计

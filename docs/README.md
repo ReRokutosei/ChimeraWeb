@@ -29,6 +29,13 @@ A lightweight desktop image stitching and cutting tool, all processing stays loc
 | Desktop wrapper | Tauri v2 (optional, Rust backend) |
 | Storage | localStorage (settings) |
 
+## Requirements
+
+- **Chrome** Version 147 or higher. Other browsers not tested.
+- **OS**: Windows 10 or later (x86_64)
+- **Runtime**: WebView2 (pre-installed on Windows 10+)
+- **Storage**: ~10 MB disk space for the app
+
 ## Getting Started
 
 ```bash
@@ -52,6 +59,12 @@ npm run tauri build  # → src-tauri/target/release/bundle/nsis/
 
 ![](./20260429205706.webp)
 
-## License
+## Legal & Privacy
 
-GNU General Public License v3.0
+- **Privacy Policy**: No network permissions requested; zero data collection. All processing remains local. See [Privacy Policy](./PrivacyPolicy_EN.md).
+- **Disclaimer**: Provided "as is" without warranty. See [Disclaimer](./Disclaimer_EN.md).
+- **License**: Licensed under the GNU General Public License v3.0 (GPLv3). See [LICENSE](../LICENSE).
+
+## Acknowledgments
+
+App icon designed by [Freepik](https://www.freepik.com/icon/animal_13228011).
