@@ -38,12 +38,6 @@ jobs:
           $ver = "$env:GITHUB_REF" -replace 'refs/tags/', ''
           echo "RELEASE_VERSION=$ver" | Out-File -FilePath $env:GITHUB_ENV -Append
 
-      - name: Build Tauri app
-        run: npm run tauri build
-        env:
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
-
       - name: Generate release notes
         shell: pwsh
         run: |
@@ -51,6 +45,12 @@ jobs:
           $prevTag = git tag --sort=-v:refname | Select-String -Pattern "^$currentTag$" -NotMatch | Select-Object -First 1
           $range = if (-not $prevTag) { $currentTag } else { "$prevTag...$currentTag" }
           & .github/scripts/gen_release_notes.ps1 -r "$range" -o release.md
+
+      - name: Build Tauri app
+        run: npm run tauri build
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
 
       - name: Create Release
         uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda

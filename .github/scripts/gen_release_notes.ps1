@@ -11,22 +11,16 @@ function To-Handle($name, $email) {
   $nl = $name.ToLowerInvariant()
   $el = $email.ToLowerInvariant()
 
-  $rules = @(
-    { $el -eq '199175422+chatgpt-codex-connector[bot]@users.noreply.github.com' -or $nl -eq 'chatgpt-codex-connector[bot]' }, '@codex'
-    { $el -eq '29139614+renovate[bot]@users.noreply.github.com' -or $nl -eq 'renovate[bot]' }, '@renovatebot'
-    { $el -eq '175728472+copilot@users.noreply.github.com' -or $nl -eq 'copilot' }, '@MicrosoftCopilot'
-    { $el -eq '136622811+coderabbitai[bot]@users.noreply.github.com' -or $nl -eq 'coderabbitai[bot]' }, '@coderabbitai'
-    { $el -eq 'qwen-coder@alibabacloud.com' -or $nl -eq 'qwen-coder' }, '@QwenLM'
-    { $el -eq '176961590+gemini-code-assist[bot]@users.noreply.github.com' -or $el -eq 'noreply@google.com' -or $nl -like '*gemini*' }, '@gemini-code-assist'
-    { $el -like '*@anthropic.com' -or $nl -like '*claude*' }, '@claude'
-    { $email -match '^(\d+)\+([^@]+)@users\.noreply\.github\.com$' }, "@$($matches[2])"
-    { $email -match '^([^@]+)@users\.noreply\.github\.com$' }, "@$($matches[1])"
-  )
+  if ($el -eq '199175422+chatgpt-codex-connector[bot]@users.noreply.github.com' -or $nl -eq 'chatgpt-codex-connector[bot]') { return '@codex' }
+  if ($el -eq '29139614+renovate[bot]@users.noreply.github.com' -or $nl -eq 'renovate[bot]') { return '@renovatebot' }
+  if ($el -eq '175728472+copilot@users.noreply.github.com' -or $nl -eq 'copilot') { return '@MicrosoftCopilot' }
+  if ($el -eq '136622811+coderabbitai[bot]@users.noreply.github.com' -or $nl -eq 'coderabbitai[bot]') { return '@coderabbitai' }
+  if ($el -eq 'qwen-coder@alibabacloud.com' -or $nl -eq 'qwen-coder') { return '@QwenLM' }
+  if ($el -eq '176961590+gemini-code-assist[bot]@users.noreply.github.com' -or $el -eq 'noreply@google.com' -or $nl -like '*gemini*') { return '@gemini-code-assist' }
+  if ($el -like '*@anthropic.com' -or $nl -like '*claude*') { return '@claude' }
 
-  for ($i = 0; $i -lt $rules.Length; $i += 2) {
-    $cond = $rules[$i].Invoke()
-    if ($cond) { return $rules[$i + 1] }
-  }
+  if ($email -match '^(\d+)\+([^@]+)@users\.noreply\.github\.com$') { return "@$($matches[2])" }
+  if ($email -match '^([^@]+)@users\.noreply\.github\.com$') { return "@$($matches[1])" }
 
   if ($name) { return "@$name" }
   return '@unknown'
