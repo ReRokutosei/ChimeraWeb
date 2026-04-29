@@ -146,13 +146,59 @@ function renderStitchParams(): HTMLElement {
 
   const wRow = document.createElement('div');
   wRow.className = 'param-row';
-  wRow.appendChild(createLabel('图片缩放'));
-  const wCtrl = renderSegmentedControl(
-    [{ label: '最小宽度', value: 'MIN_WIDTH' }, { label: '不缩放', value: 'NONE' }, { label: '最大宽度', value: 'MAX_WIDTH' }],
-    state.widthScale,
-    val => saveWidthScale(val as typeof state.widthScale)
-  );
-  wRow.appendChild(wCtrl);
+  const wLabel = createLabel('图片缩放');
+  wRow.appendChild(wLabel);
+
+  const wContainer = document.createElement('div');
+  wContainer.className = 'segmented-control';
+
+  const wOpts = [
+    { value: 'MIN_WIDTH' as const, labelW: '最小宽度', labelH: '最小高度' },
+    { value: 'NONE' as const, labelW: '不缩放', labelH: '不缩放' },
+    { value: 'MAX_WIDTH' as const, labelW: '最大宽度', labelH: '最大高度' },
+  ];
+
+  const wButtons: HTMLElement[] = [];
+  for (const opt of wOpts) {
+    const isHoriz = state.stitchMode === 'DIRECT_HORIZONTAL';
+    const btn = document.createElement('button');
+    btn.className = 'segmented-btn' + (opt.value === state.widthScale ? ' active' : '');
+    btn.textContent = isHoriz ? opt.labelH : opt.labelW;
+    btn.dataset.val = opt.value;
+    btn.addEventListener('click', () => {
+      if (btn.classList.contains('disabled')) return;
+      wContainer.querySelectorAll('.segmented-btn').forEach(el => el.classList.remove('active'));
+      btn.classList.add('active');
+      saveWidthScale(opt.value);
+    });
+    wContainer.appendChild(btn);
+    wButtons.push(btn);
+  }
+
+  function updateScaleLabels(): void {
+    const isHoriz = state.stitchMode === 'DIRECT_HORIZONTAL';
+    wOpts.forEach((opt, i) => {
+      wButtons[i].textContent = isHoriz ? opt.labelH : opt.labelW;
+    });
+  }
+
+  function updateScaleDisabled(): void {
+    const isOverlay = state.overlayMode === 'ENABLED';
+    // NONE button is at index 1
+    wButtons[1].classList.toggle('disabled', isOverlay);
+    if (isOverlay && state.widthScale === 'NONE') {
+      saveWidthScale('MIN_WIDTH');
+      wButtons[0].classList.add('active');
+      wButtons[1].classList.remove('active');
+    }
+  }
+
+  state.on('stitchMode', updateScaleLabels);
+  state.on('overlayMode', updateScaleDisabled);
+  updateScaleLabels();
+  updateScaleDisabled();
+
+  wRow.appendChild(wContainer);
   card.appendChild(wRow);
 
   const ovRow = document.createElement('div');

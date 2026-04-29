@@ -166,11 +166,7 @@ async function stitchOverlayVertical(
     const d = scaled[i];
     const stripH = Math.min(overlayStripHeight, d.h);
 
-    // Draw colored background strip
-    ctx.fillStyle = options.spacingColor;
-    ctx.fillRect(0, y, width, stripH);
-
-    // Extract bottom overlay region from current image and draw it
+    // Draw overlay strip from bottom of current image
     const srcY = d.h - stripH;
     ctx.drawImage(
       d.img, 0, srcY, d.img.naturalWidth, stripH,
@@ -210,9 +206,6 @@ async function stitchOverlayHorizontal(
   for (let i = 1; i < scaled.length; i++) {
     const d = scaled[i];
     const stripW = Math.min(overlayStripWidth, d.w);
-
-    ctx.fillStyle = options.spacingColor;
-    ctx.fillRect(x, 0, stripW, height);
 
     const srcX = d.w - stripW;
     ctx.drawImage(
