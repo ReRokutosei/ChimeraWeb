@@ -6,6 +6,9 @@ A lightweight desktop image stitching and cutting tool, all processing stays loc
 
 > [!TIP]
 > 
+> **Try it online** (hosted by GitHub Pages, client-side only):  
+> https://rerokutosei.github.io/ChimeraWeb/
+> 
 > For the Android version, visit https://github.com/ReRokutosei/Chimera
 
 ## Features

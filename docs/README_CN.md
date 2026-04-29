@@ -5,6 +5,9 @@
 轻量级桌面图片拼接与切割工具，所有处理均在本地完成
 
 > [!TIP]
+>
+> **在线预览**（由 GitHub Pages 提供，纯前端）：  
+> https://rerokutosei.github.io/ChimeraWeb/
 > 
 > 安卓端请前往 https://github.com/ReRokutosei/Chimera
 
