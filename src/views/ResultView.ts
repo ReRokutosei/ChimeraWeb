@@ -77,6 +77,7 @@ function renderSplitResultUI(container: HTMLElement): void {
 
   const results = state.splitResults!;
   const total = results.length;
+  const isMulti = total > 1;
   const idx = state.currentSplitImageIndex;
   const current = results[idx];
 
@@ -84,39 +85,80 @@ function renderSplitResultUI(container: HTMLElement): void {
 
   const header = document.createElement('div');
   header.style.cssText = 'font-size:14px;color:var(--text-secondary);margin-bottom:12px;text-align:center;';
-  header.textContent = `${current.imageName}  (${idx + 1}/${total})`;
+  header.textContent = isMulti ? `${current.imageName}  (${idx + 1}/${total})` : current.imageName;
   container.appendChild(header);
 
-  const navRow = document.createElement('div');
-  navRow.style.cssText = 'display:flex;gap:12px;margin-bottom:16px;justify-content:center;';
+  // Prev / Next navigation (hidden when only 1 image)
+  if (isMulti) {
+    const navRow = document.createElement('div');
+    navRow.style.cssText = 'display:flex;gap:12px;margin-bottom:12px;justify-content:center;';
 
-  const prevBtn = document.createElement('button');
-  prevBtn.className = 'download-btn';
-  prevBtn.textContent = '← 上一张';
-  prevBtn.disabled = idx === 0;
-  prevBtn.style.opacity = idx === 0 ? '0.4' : '';
-  prevBtn.addEventListener('click', () => {
-    if (state.currentSplitImageIndex > 0) {
-      state.currentSplitImageIndex--;
-      renderSplitResultUI(container);
+    const prevBtn = document.createElement('button');
+    prevBtn.className = 'download-btn';
+    prevBtn.textContent = '← 上一张';
+    prevBtn.disabled = idx === 0;
+    prevBtn.style.opacity = idx === 0 ? '0.4' : '';
+    prevBtn.addEventListener('click', () => {
+      if (state.currentSplitImageIndex > 0) {
+        state.currentSplitImageIndex--;
+        renderSplitResultUI(container);
+      }
+    });
+
+    const nextBtn = document.createElement('button');
+    nextBtn.className = 'download-btn';
+    nextBtn.textContent = '下一张 →';
+    nextBtn.disabled = idx >= total - 1;
+    nextBtn.style.opacity = idx >= total - 1 ? '0.4' : '';
+    nextBtn.addEventListener('click', () => {
+      if (state.currentSplitImageIndex < total - 1) {
+        state.currentSplitImageIndex++;
+        renderSplitResultUI(container);
+      }
+    });
+
+    navRow.appendChild(prevBtn);
+    navRow.appendChild(nextBtn);
+    container.appendChild(navRow);
+  }
+
+  // Save buttons
+  const saveRow = document.createElement('div');
+  saveRow.style.cssText = 'display:flex;gap:12px;margin-bottom:10px;';
+
+  if (isMulti) {
+    const saveAllBtn = document.createElement('button');
+    saveAllBtn.className = 'download-btn';
+    saveAllBtn.textContent = '保存全部子图';
+    saveAllBtn.title = `保存全部 ${total} 张图片的所有子图`;
+    saveAllBtn.addEventListener('click', () => {
+      for (const r of results) {
+        const baseName = r.imageName.replace(/\.[^.]+$/, '');
+        for (const cell of r.cells) {
+          downloadBlob(cell.blob, `${baseName}_cell_${cell.index + 1}.png`);
+        }
+      }
+    });
+    saveRow.appendChild(saveAllBtn);
+  }
+
+  const saveCurrentBtn = document.createElement('button');
+  saveCurrentBtn.className = 'download-btn';
+  saveCurrentBtn.textContent = '保存本图子图';
+  saveCurrentBtn.title = `保存「${current.imageName}」的所有子图`;
+  saveCurrentBtn.addEventListener('click', () => {
+    const baseName = current.imageName.replace(/\.[^.]+$/, '');
+    for (const cell of current.cells) {
+      downloadBlob(cell.blob, `${baseName}_cell_${cell.index + 1}.png`);
     }
   });
+  saveRow.appendChild(saveCurrentBtn);
+  container.appendChild(saveRow);
 
-  const nextBtn = document.createElement('button');
-  nextBtn.className = 'download-btn';
-  nextBtn.textContent = '下一张 →';
-  nextBtn.disabled = idx >= total - 1;
-  nextBtn.style.opacity = idx >= total - 1 ? '0.4' : '';
-  nextBtn.addEventListener('click', () => {
-    if (state.currentSplitImageIndex < total - 1) {
-      state.currentSplitImageIndex++;
-      renderSplitResultUI(container);
-    }
-  });
-
-  navRow.appendChild(prevBtn);
-  navRow.appendChild(nextBtn);
-  container.appendChild(navRow);
+  const hint = document.createElement('p');
+  hint.style.cssText = 'margin-bottom:12px;font-size:13px;color:var(--text-secondary);text-align:center;';
+  hint.textContent = '点击任意单元格即可单独下载';
+  container.appendChild(hint);
 
   const grid = document.createElement('div');
   grid.className = 'split-grid';
@@ -138,41 +180,4 @@ function renderSplitResultUI(container: HTMLElement): void {
     grid.appendChild(cellDiv);
   }
   container.appendChild(grid);
-
-  // Two save buttons side by side
-  const saveRow = document.createElement('div');
-  saveRow.style.cssText = 'display:flex;gap:12px;margin-top:16px;';
-
-  const saveAllBtn = document.createElement('button');
-  saveAllBtn.className = 'download-btn';
-  saveAllBtn.textContent = '保存全部子图';
-  saveAllBtn.title = `保存全部 ${results.length} 张图片的所有子图`;
-  saveAllBtn.addEventListener('click', () => {
-    for (const r of results) {
-      const baseName = r.imageName.replace(/\.[^.]+$/, '');
-      for (const cell of r.cells) {
-        downloadBlob(cell.blob, `${baseName}_cell_${cell.index + 1}.png`);
-      }
-    }
-  });
-  saveRow.appendChild(saveAllBtn);
-
-  const saveCurrentBtn = document.createElement('button');
-  saveCurrentBtn.className = 'download-btn';
-  saveCurrentBtn.textContent = '保存本图子图';
-  saveCurrentBtn.title = `保存「${current.imageName}」的所有子图`;
-  saveCurrentBtn.addEventListener('click', () => {
-    const baseName = current.imageName.replace(/\.[^.]+$/, '');
-    for (const cell of current.cells) {
-      downloadBlob(cell.blob, `${baseName}_cell_${cell.index + 1}.png`);
-    }
-  });
-  saveRow.appendChild(saveCurrentBtn);
-
-  container.appendChild(saveRow);
-
-  const hint = document.createElement('p');
-  hint.style.cssText = 'margin-top:12px;font-size:13px;color:var(--text-secondary);text-align:center;';
-  hint.textContent = '点击任意单元格即可单独下载';
-  container.appendChild(hint);
 }
