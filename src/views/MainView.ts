@@ -57,15 +57,7 @@ function updateThemeIcon(btn: HTMLElement): void {
     : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>';
 }
 
-function renderDropZoneCard(onFiles: (files: File[]) => void, hasImages: boolean): HTMLElement {
-  if (hasImages) {
-    const btn = document.createElement('button');
-    btn.className = 'add-image-btn';
-    btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> 添加图片';
-    btn.addEventListener('click', () => openFilePicker(onFiles));
-    return btn;
-  }
-
+function renderDropZoneCard(onFiles: (files: File[]) => void): HTMLElement {
   const zone = document.createElement('div');
   zone.className = 'drop-zone';
   zone.innerHTML = `
@@ -463,9 +455,9 @@ export async function renderMainView(container: HTMLElement): Promise<void> {
     function updateUI(): void {
       dropContainer.innerHTML = '';
       const hasImages = state.images.length > 0;
-      const dz = renderDropZoneCard(files => loadImages(files), hasImages);
+      const dz = renderDropZoneCard(files => loadImages(files));
       dropContainer.appendChild(dz);
-      dropContainer.style.flex = hasImages ? '0 0 auto' : '1';
+      dropContainer.style.flex = hasImages ? '0 0 50%' : '1';
 
       stripContainer.style.display = hasImages ? '' : 'none';
       stripContainer.innerHTML = '';

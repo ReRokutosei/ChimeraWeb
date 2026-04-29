@@ -1,5 +1,5 @@
 import { state } from '../state';
-import { loadImages, removeImage } from './FileDrop';
+import { removeImage } from './FileDrop';
 
 export function renderImageStrip(): HTMLElement {
   const container = document.createElement('div');
@@ -7,6 +7,8 @@ export function renderImageStrip(): HTMLElement {
 
   const strip = document.createElement('div');
   strip.className = 'image-strip';
+
+  let draggedId: string | null = null;
 
   function rebuild(): void {
     strip.innerHTML = '';
@@ -16,6 +18,7 @@ export function renderImageStrip(): HTMLElement {
       const thumb = document.createElement('div');
       thumb.className = 'thumb' + (info.id === state.images[state.currentImageIndex]?.id ? ' active' : '');
       thumb.dataset.id = info.id;
+      thumb.draggable = true;
 
       const img = document.createElement('img');
       img.src = info.src;
@@ -41,36 +44,61 @@ export function renderImageStrip(): HTMLElement {
         }
       });
 
+      // Drag reorder
+      thumb.addEventListener('dragstart', e => {
+        draggedId = info.id;
+        e.dataTransfer!.effectAllowed = 'move';
+        thumb.classList.add('dragging');
+      });
+      thumb.addEventListener('dragend', () => {
+        draggedId = null;
+        strip.querySelectorAll('.thumb').forEach(el => el.classList.remove('dragging', 'drag-over'));
+      });
+      thumb.addEventListener('dragover', e => {
+        e.preventDefault();
+        e.dataTransfer!.dropEffect = 'move';
+        strip.querySelectorAll('.thumb').forEach(el => el.classList.remove('drag-over'));
+        thumb.classList.add('drag-over');
+      });
+      thumb.addEventListener('dragleave', () => {
+        thumb.classList.remove('drag-over');
+      });
+      thumb.addEventListener('drop', e => {
+        e.preventDefault();
+        thumb.classList.remove('drag-over');
+        if (!draggedId || draggedId === info.id) return;
+
+        const fromIdx = state.images.findIndex(i => i.id === draggedId);
+        const toIdx = state.images.findIndex(i => i.id === info.id);
+        if (fromIdx < 0 || toIdx < 0) return;
+
+        const newImages = [...state.images];
+        const [moved] = newImages.splice(fromIdx, 1);
+        newImages.splice(toIdx, 0, moved);
+
+        // Update currentImageIndex if needed
+        let newIdx = state.currentImageIndex;
+        if (state.currentImageIndex === fromIdx) newIdx = toIdx;
+        else if (fromIdx < state.currentImageIndex && toIdx >= state.currentImageIndex) newIdx--;
+        else if (fromIdx > state.currentImageIndex && toIdx <= state.currentImageIndex) newIdx++;
+
+        state.images = newImages;
+        state.currentImageIndex = newIdx;
+        state.notify('images');
+      });
+
       strip.appendChild(thumb);
     }
   }
 
-  const addBtn = document.createElement('div');
-  addBtn.className = 'thumb';
-  addBtn.style.cssText = 'display:flex;align-items:center;justify-content:center;border:2px dashed var(--border);background:var(--bg-secondary);cursor:pointer;font-size:24px;color:var(--text-secondary);';
-  addBtn.textContent = '+';
-  addBtn.title = '添加图片';
-  addBtn.addEventListener('click', () => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.multiple = true;
-    input.accept = 'image/*';
-    input.addEventListener('change', () => {
-      if (input.files) loadImages(Array.from(input.files));
-    });
-    input.click();
-  });
-
   function render(): void {
     rebuild();
-    strip.appendChild(addBtn);
   }
 
   state.on('images', render);
   state.on('currentImage', () => {
     strip.querySelectorAll('.thumb').forEach(el => {
       const thumb = el as HTMLElement;
-      if (thumb.classList.contains('thumb') && !thumb.querySelector('.remove-btn')) return;
       thumb.classList.toggle('active', thumb.dataset.id === state.images[state.currentImageIndex]?.id);
     });
   });

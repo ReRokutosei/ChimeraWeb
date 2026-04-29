@@ -403,6 +403,15 @@ input[type="number"]:focus {
   opacity: 1;
 }
 
+.image-strip .thumb.dragging {
+  opacity: 0.4;
+}
+
+.image-strip .thumb.drag-over {
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--bg) 80%, var(--primary) 20%);
+}
+
 /* ─── Action Bar ─── */
 
 .action-bar {
@@ -557,7 +566,7 @@ input[type="number"]:focus {
 }
 
 .left-panel {
-  flex: 0 0 60%;
+  flex: 0 0 55%;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -565,7 +574,7 @@ input[type="number"]:focus {
 }
 
 .right-panel {
-  flex: 0 0 calc(40% - 16px);
+  flex: 0 0 calc(45% - 16px);
   display: flex;
   flex-direction: column;
   gap: 12px;
