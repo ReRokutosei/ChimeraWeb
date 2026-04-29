@@ -1,4 +1,5 @@
 import { state } from '../state';
+import { t } from '../i18n';
 
 function downloadBlob(blob: Blob, filename: string): void {
   const url = URL.createObjectURL(blob);
@@ -17,7 +18,7 @@ export function renderResultView(container: HTMLElement): void {
 
   const backBtn = document.createElement('button');
   backBtn.className = 'back-btn';
-  backBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg> 返回';
+  backBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg> ' + t('back');
   backBtn.addEventListener('click', () => {
     state.view = 'main';
     state.resultType = null;
@@ -29,7 +30,7 @@ export function renderResultView(container: HTMLElement): void {
   const title = document.createElement('span');
   title.style.fontWeight = '600';
   title.style.fontSize = '16px';
-  title.textContent = '结果预览';
+  title.textContent = t('result_title');
 
   bar.appendChild(backBtn);
   bar.appendChild(title);
@@ -54,7 +55,7 @@ function renderStitchResult(container: HTMLElement): void {
   const blobUrl = URL.createObjectURL(state.resultBlob!);
   const img = document.createElement('img');
   img.src = blobUrl;
-  img.alt = '拼接结果';
+  img.alt = t('result_title');
   previewArea.appendChild(img);
   container.appendChild(previewArea);
 
@@ -65,7 +66,7 @@ function renderStitchResult(container: HTMLElement): void {
   saveBtn.className = 'download-btn';
   const extMap: Record<string, string> = { png: 'png', jpeg: 'jpg', webp: 'webp' };
   const ext = extMap[state.resultFormat] || 'png';
-  saveBtn.textContent = `保存为 ${state.resultFormat.toUpperCase()}`;
+  saveBtn.textContent = t('save_as', { fmt: state.resultFormat.toUpperCase() });
   saveBtn.addEventListener('click', () => {
     downloadBlob(state.resultBlob!, `chimera_stitch_${Date.now()}.${ext}`);
   });
@@ -96,7 +97,7 @@ function renderSplitResultUI(container: HTMLElement): void {
 
     const prevBtn = document.createElement('button');
     prevBtn.className = 'download-btn';
-    prevBtn.textContent = '← 上一张';
+    prevBtn.textContent = t('prev');
     prevBtn.disabled = idx === 0;
     prevBtn.style.opacity = idx === 0 ? '0.4' : '';
     prevBtn.addEventListener('click', () => {
@@ -108,7 +109,7 @@ function renderSplitResultUI(container: HTMLElement): void {
 
     const nextBtn = document.createElement('button');
     nextBtn.className = 'download-btn';
-    nextBtn.textContent = '下一张 →';
+    nextBtn.textContent = t('next');
     nextBtn.disabled = idx >= total - 1;
     nextBtn.style.opacity = idx >= total - 1 ? '0.4' : '';
     nextBtn.addEventListener('click', () => {
@@ -130,8 +131,8 @@ function renderSplitResultUI(container: HTMLElement): void {
   if (isMulti) {
     const saveAllBtn = document.createElement('button');
     saveAllBtn.className = 'download-btn';
-    saveAllBtn.textContent = '保存全部子图';
-    saveAllBtn.title = `保存全部 ${total} 张图片的所有子图`;
+    saveAllBtn.textContent = t('save_all');
+    saveAllBtn.title = t('save_all_title', { n: total });
     saveAllBtn.addEventListener('click', () => {
       for (const r of results) {
         const baseName = r.imageName.replace(/\.[^.]+$/, '');
@@ -145,8 +146,8 @@ function renderSplitResultUI(container: HTMLElement): void {
 
   const saveCurrentBtn = document.createElement('button');
   saveCurrentBtn.className = 'download-btn';
-  saveCurrentBtn.textContent = '保存本图子图';
-  saveCurrentBtn.title = `保存「${current.imageName}」的所有子图`;
+  saveCurrentBtn.textContent = t('save_current');
+  saveCurrentBtn.title = t('save_current_title', { name: current.imageName });
   saveCurrentBtn.addEventListener('click', () => {
     const baseName = current.imageName.replace(/\.[^.]+$/, '');
     for (const cell of current.cells) {
@@ -158,7 +159,7 @@ function renderSplitResultUI(container: HTMLElement): void {
 
   const hint = document.createElement('p');
   hint.style.cssText = 'margin-bottom:12px;font-size:13px;color:var(--text-secondary);text-align:center;';
-  hint.textContent = '点击任意单元格即可单独下载';
+  hint.textContent = t('click_download');
   container.appendChild(hint);
 
   const grid = document.createElement('div');

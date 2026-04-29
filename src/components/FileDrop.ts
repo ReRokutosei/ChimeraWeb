@@ -1,4 +1,5 @@
 import { state, type ImageInfo } from '../state';
+import { t } from '../i18n';
 
 let counter = 0;
 
@@ -8,11 +9,11 @@ export function loadImages(files: File[]): void {
   if (state.isCutMode) {
     const maxNew = 10 - state.images.length;
     if (maxNew <= 0) {
-      alert('切割模式最多支持 10 张图片');
+      alert(t('cut_max'));
       return;
     }
     if (files.length > maxNew) {
-      alert(`切割模式最多添加 ${maxNew} 张图片，已自动保留前 ${maxNew} 张`);
+      alert(t('cut_max_auto', { n: maxNew }));
       remaining = files.slice(0, maxNew);
     }
   }

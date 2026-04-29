@@ -150,6 +150,7 @@ input[type="number"]:focus {
   justify-content: center;
   border-radius: 50%;
   color: var(--text-secondary);
+  text-decoration: none;
   transition: background var(--transition), color var(--transition);
 }
 
