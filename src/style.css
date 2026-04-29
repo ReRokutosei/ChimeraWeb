@@ -302,8 +302,8 @@ input[type="number"]:focus {
 /* ─── Color Picker ─── */
 
 .color-picker-wrapper input[type="color"] {
-  width: 32px;
-  height: 32px;
+  width: 16px;
+  height: 16px;
   border: 2px solid var(--border);
   border-radius: 50%;
   cursor: pointer;
@@ -416,6 +416,18 @@ input[type="number"]:focus {
 
 .action-bar .action-btn:hover {
   background: var(--primary-hover);
+}
+
+.action-bar .action-btn:disabled,
+.action-bar .action-btn.disabled {
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  cursor: not-allowed;
+}
+
+.action-bar .action-btn:disabled:hover,
+.action-bar .action-btn.disabled:hover {
+  background: var(--bg-tertiary);
 }
 
 .clear-btn {

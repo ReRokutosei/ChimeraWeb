@@ -170,8 +170,8 @@ function renderStitchParams(): HTMLElement {
   oaRow.className = 'param-row';
   oaRow.id = 'overlay-area-row';
   oaRow.style.display = state.overlayMode === 'ENABLED' ? '' : 'none';
-  oaRow.appendChild(createLabel('叠加区域'));
-  const oaInput = createNumberInput('overlay-area-input', state.overlayArea, 1, 200);
+  oaRow.appendChild(createLabel('叠加比例(%)'));
+  const oaInput = createNumberInput('overlay-area-input', state.overlayArea, 0, 100);
   oaInput.addEventListener('change', () => saveOverlayArea(Number(oaInput.value)));
   oaRow.appendChild(oaInput);
   card.appendChild(oaRow);
@@ -361,7 +361,7 @@ export async function renderMainView(container: HTMLElement): Promise<void> {
             spacing: state.imageSpacing,
             spacingColor: state.spacingColor,
             overlayEnabled: state.overlayMode === 'ENABLED',
-            overlayArea: state.overlayArea,
+            overlayRatio: state.overlayArea,
             widthScale: state.widthScale
           });
 
