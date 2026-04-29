@@ -139,10 +139,14 @@ function renderSplitResultUI(container: HTMLElement): void {
   }
   container.appendChild(grid);
 
+  // Two save buttons side by side
+  const saveRow = document.createElement('div');
+  saveRow.style.cssText = 'display:flex;gap:12px;margin-top:16px;';
+
   const saveAllBtn = document.createElement('button');
   saveAllBtn.className = 'download-btn';
-  saveAllBtn.style.marginTop = '16px';
-  saveAllBtn.textContent = '保存全部';
+  saveAllBtn.textContent = '保存全部子图';
+  saveAllBtn.title = `保存全部 ${results.length} 张图片的所有子图`;
   saveAllBtn.addEventListener('click', () => {
     for (const r of results) {
       const baseName = r.imageName.replace(/\.[^.]+$/, '');
@@ -151,7 +155,21 @@ function renderSplitResultUI(container: HTMLElement): void {
       }
     }
   });
-  container.appendChild(saveAllBtn);
+  saveRow.appendChild(saveAllBtn);
+
+  const saveCurrentBtn = document.createElement('button');
+  saveCurrentBtn.className = 'download-btn';
+  saveCurrentBtn.textContent = '保存本图子图';
+  saveCurrentBtn.title = `保存「${current.imageName}」的所有子图`;
+  saveCurrentBtn.addEventListener('click', () => {
+    const baseName = current.imageName.replace(/\.[^.]+$/, '');
+    for (const cell of current.cells) {
+      downloadBlob(cell.blob, `${baseName}_cell_${cell.index + 1}.png`);
+    }
+  });
+  saveRow.appendChild(saveCurrentBtn);
+
+  container.appendChild(saveRow);
 
   const hint = document.createElement('p');
   hint.style.cssText = 'margin-top:12px;font-size:13px;color:var(--text-secondary);text-align:center;';
