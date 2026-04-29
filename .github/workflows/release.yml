@@ -12,6 +12,8 @@ concurrency:
 jobs:
   release:
     runs-on: windows-latest
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout code
@@ -55,7 +57,7 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.PAT_TOKEN }}
           prerelease: ${{ contains(env.RELEASE_VERSION, '-') }}
           draft: false
           generate_release_notes: false
