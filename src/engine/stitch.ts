@@ -8,17 +8,19 @@ export interface StitchOptions {
 }
 
 export interface StitchResult {
-  canvas: HTMLCanvasElement;
-  blob: Blob;
+  canvas: OffscreenCanvas;
   width: number;
   height: number;
 }
 
-function getScaledDimensions(images: HTMLImageElement[], direction: string, scale: string): { img: HTMLImageElement; w: number; h: number }[] {
-  const dims = images.map(img => ({
+type ImgSrc = ImageBitmap;
+type Dims = { img: ImgSrc; w: number; h: number };
+
+function getScaledDimensions(images: ImgSrc[], direction: string, scale: string): Dims[] {
+  const dims: Dims[] = images.map(img => ({
     img,
-    w: img.naturalWidth,
-    h: img.naturalHeight
+    w: img.width,
+    h: img.height
   }));
 
   if (direction === 'VERTICAL') {
@@ -46,7 +48,7 @@ function getScaledDimensions(images: HTMLImageElement[], direction: string, scal
 }
 
 export async function stitchImages(
-  images: HTMLImageElement[],
+  images: ImgSrc[],
   options: StitchOptions
 ): Promise<StitchResult> {
   if (images.length === 0) throw new Error('No images to stitch');
@@ -64,22 +66,16 @@ export async function stitchImages(
   return stitchVertical(scaled, options);
 }
 
-async function stitchVertical(
-  scaled: { img: HTMLImageElement; w: number; h: number }[],
-  options: StitchOptions
-): Promise<StitchResult> {
+async function stitchVertical(scaled: Dims[], options: StitchOptions): Promise<StitchResult> {
   const width = Math.max(...scaled.map(d => d.w));
   const totalHeight = scaled.reduce((s, d) => s + d.h, 0) + options.spacing * Math.max(0, scaled.length - 1);
 
-  const canvas = document.createElement('canvas');
-  canvas.width = width;
-  canvas.height = totalHeight;
+  const canvas = new OffscreenCanvas(width, totalHeight);
   const ctx = canvas.getContext('2d')!;
 
   let y = 0;
   for (const d of scaled) {
-    if (d.img.naturalWidth === 0 || d.img.naturalHeight === 0) continue;
-    ctx.drawImage(d.img, 0, 0, d.img.naturalWidth, d.img.naturalHeight, 0, y, d.w, d.h);
+    ctx.drawImage(d.img, 0, 0, d.img.width, d.img.height, 0, y, d.w, d.h);
     y += d.h;
     if (options.spacing > 0) {
       ctx.fillStyle = options.spacingColor;
@@ -88,29 +84,19 @@ async function stitchVertical(
     }
   }
 
-  const blob = await new Promise<Blob>((resolve, reject) => {
-    canvas.toBlob(b => { if (b) resolve(b); else reject(new Error('toBlob failed')); }, 'image/png');
-  });
-
-  return { canvas, blob, width, height: totalHeight };
+  return { canvas, width, height: totalHeight };
 }
 
-async function stitchHorizontal(
-  scaled: { img: HTMLImageElement; w: number; h: number }[],
-  options: StitchOptions
-): Promise<StitchResult> {
+async function stitchHorizontal(scaled: Dims[], options: StitchOptions): Promise<StitchResult> {
   const height = Math.max(...scaled.map(d => d.h));
   const totalWidth = scaled.reduce((s, d) => s + d.w, 0) + options.spacing * Math.max(0, scaled.length - 1);
 
-  const canvas = document.createElement('canvas');
-  canvas.width = totalWidth;
-  canvas.height = height;
+  const canvas = new OffscreenCanvas(totalWidth, height);
   const ctx = canvas.getContext('2d')!;
 
   let x = 0;
   for (const d of scaled) {
-    if (d.img.naturalWidth === 0 || d.img.naturalHeight === 0) continue;
-    ctx.drawImage(d.img, 0, 0, d.img.naturalWidth, d.img.naturalHeight, x, 0, d.w, d.h);
+    ctx.drawImage(d.img, 0, 0, d.img.width, d.img.height, x, 0, d.w, d.h);
     x += d.w;
     if (options.spacing > 0) {
       ctx.fillStyle = options.spacingColor;
@@ -119,19 +105,11 @@ async function stitchHorizontal(
     }
   }
 
-  const blob = await new Promise<Blob>((resolve, reject) => {
-    canvas.toBlob(b => { if (b) resolve(b); else reject(new Error('toBlob failed')); }, 'image/png');
-  });
-
-  return { canvas, blob, width: totalWidth, height };
+  return { canvas, width: totalWidth, height };
 }
 
-async function stitchOverlay(
-  scaled: { img: HTMLImageElement; w: number; h: number }[],
-  options: StitchOptions
-): Promise<StitchResult> {
+async function stitchOverlay(scaled: Dims[], options: StitchOptions): Promise<StitchResult> {
   if (scaled.length === 0) throw new Error('No images for overlay');
-
   const width = Math.max(...scaled.map(d => d.w));
 
   if (options.direction === 'HORIZONTAL') {
@@ -140,84 +118,54 @@ async function stitchOverlay(
   return stitchOverlayVertical(scaled, options, width);
 }
 
-async function stitchOverlayVertical(
-  scaled: { img: HTMLImageElement; w: number; h: number }[],
-  options: StitchOptions,
-  width: number
-): Promise<StitchResult> {
+async function stitchOverlayVertical(scaled: Dims[], options: StitchOptions, width: number): Promise<StitchResult> {
   const first = scaled[0];
-  const overlayStripHeight = Math.max(1, Math.floor(first.h * options.overlayRatio / 100));
+  const stripH = Math.max(1, Math.floor(first.h * options.overlayRatio / 100));
 
   let totalHeight = first.h;
   for (let i = 1; i < scaled.length; i++) {
-    totalHeight += Math.min(overlayStripHeight, scaled[i].h);
+    totalHeight += Math.min(stripH, scaled[i].h);
   }
 
-  const canvas = document.createElement('canvas');
-  canvas.width = width;
-  canvas.height = totalHeight;
+  const canvas = new OffscreenCanvas(width, totalHeight);
   const ctx = canvas.getContext('2d')!;
 
-  // Draw first image fully
-  ctx.drawImage(first.img, 0, 0, first.img.naturalWidth, first.img.naturalHeight, 0, 0, first.w, first.h);
+  ctx.drawImage(first.img, 0, 0, first.img.width, first.img.height, 0, 0, first.w, first.h);
 
   let y = first.h;
   for (let i = 1; i < scaled.length; i++) {
     const d = scaled[i];
-    const stripH = Math.min(overlayStripHeight, d.h);
-
-    // Draw overlay strip from bottom of current image
-    const srcY = d.h - stripH;
-    ctx.drawImage(
-      d.img, 0, srcY, d.img.naturalWidth, stripH,
-      0, y, d.w, stripH
-    );
-
-    y += stripH;
+    const sH = Math.min(stripH, d.h);
+    const srcY = d.h - sH;
+    ctx.drawImage(d.img, 0, srcY, d.img.width, sH, 0, y, d.w, sH);
+    y += sH;
   }
 
-  const blob = await new Promise<Blob>((resolve, reject) => {
-    canvas.toBlob(b => { if (b) resolve(b); else reject(new Error('toBlob failed')); }, 'image/png');
-  });
-  return { canvas, blob, width, height: totalHeight };
+  return { canvas, width, height: totalHeight };
 }
 
-async function stitchOverlayHorizontal(
-  scaled: { img: HTMLImageElement; w: number; h: number }[],
-  options: StitchOptions,
-  height: number
-): Promise<StitchResult> {
+async function stitchOverlayHorizontal(scaled: Dims[], options: StitchOptions, height: number): Promise<StitchResult> {
   const first = scaled[0];
-  const overlayStripWidth = Math.max(1, Math.floor(first.w * options.overlayRatio / 100));
+  const stripW = Math.max(1, Math.floor(first.w * options.overlayRatio / 100));
 
   let totalWidth = first.w;
   for (let i = 1; i < scaled.length; i++) {
-    totalWidth += Math.min(overlayStripWidth, scaled[i].w);
+    totalWidth += Math.min(stripW, scaled[i].w);
   }
 
-  const canvas = document.createElement('canvas');
-  canvas.width = totalWidth;
-  canvas.height = height;
+  const canvas = new OffscreenCanvas(totalWidth, height);
   const ctx = canvas.getContext('2d')!;
 
-  ctx.drawImage(first.img, 0, 0, first.img.naturalWidth, first.img.naturalHeight, 0, 0, first.w, first.h);
+  ctx.drawImage(first.img, 0, 0, first.img.width, first.img.height, 0, 0, first.w, first.h);
 
   let x = first.w;
   for (let i = 1; i < scaled.length; i++) {
     const d = scaled[i];
-    const stripW = Math.min(overlayStripWidth, d.w);
-
-    const srcX = d.w - stripW;
-    ctx.drawImage(
-      d.img, srcX, 0, stripW, d.img.naturalHeight,
-      x, 0, stripW, d.h
-    );
-
-    x += stripW;
+    const sW = Math.min(stripW, d.w);
+    const srcX = d.w - sW;
+    ctx.drawImage(d.img, srcX, 0, sW, d.img.height, x, 0, sW, d.h);
+    x += sW;
   }
 
-  const blob = await new Promise<Blob>((resolve, reject) => {
-    canvas.toBlob(b => { if (b) resolve(b); else reject(new Error('toBlob failed')); }, 'image/png');
-  });
-  return { canvas, blob, width: totalWidth, height };
+  return { canvas, width: totalWidth, height };
 }

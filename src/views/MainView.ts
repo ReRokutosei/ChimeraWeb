@@ -430,13 +430,9 @@ export async function renderMainView(container: HTMLElement): Promise<void> {
         if (state.isCutMode) {
           const results: SplitImageResult[] = [];
           for (const info of state.images) {
-            const img = new Image();
-            await new Promise<void>((resolve, reject) => {
-              img.onload = () => resolve();
-              img.onerror = () => reject(new Error(t('load_fail') + ': ' + info.name));
-              img.src = info.src;
-            });
-            const cells = await splitGrid(img, state.cutGrid);
+            const blob = await (await fetch(info.src)).blob();
+            const bitmap = await createImageBitmap(blob);
+            const cells = await splitGrid(bitmap, state.cutGrid);
             results.push({
               imageName: info.name,
               cells: cells.map(c => ({ blob: c.blob, index: c.index }))
@@ -448,14 +444,10 @@ export async function renderMainView(container: HTMLElement): Promise<void> {
           state.view = 'result';
           state.notify('view');
         } else {
-          const loaded = await Promise.all(state.images.map(info =>
-            new Promise<HTMLImageElement>((resolve, reject) => {
-              const img = new Image();
-              img.onload = () => resolve(img);
-              img.onerror = () => reject(new Error(t('load_fail') + ': ' + info.name));
-              img.src = info.src;
-            })
-          ));
+          const loaded = await Promise.all(state.images.map(async info => {
+            const blob = await (await fetch(info.src)).blob();
+            return createImageBitmap(blob);
+          }));
 
           const result = await stitchImages(loaded, {
             direction: state.stitchMode === 'DIRECT_HORIZONTAL' ? 'HORIZONTAL' : 'VERTICAL',
@@ -468,8 +460,9 @@ export async function renderMainView(container: HTMLElement): Promise<void> {
 
           const mime = state.outputFormat === 'png' ? 'image/png' : state.outputFormat === 'webp' ? 'image/webp' : 'image/jpeg';
           const hasQuality = state.outputFormat === 'jpeg' || state.outputFormat === 'webp';
-          const blob = await new Promise<Blob>(resolve => {
-            result.canvas.toBlob(b => resolve(b!), mime, hasQuality ? state.outputQuality / 100 : undefined);
+          const blob = await result.canvas.convertToBlob({
+            type: mime,
+            quality: hasQuality ? state.outputQuality / 100 : undefined
           });
 
           state.resultType = 'stitch';
