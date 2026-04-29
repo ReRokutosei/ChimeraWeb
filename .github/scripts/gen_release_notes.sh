@@ -12,7 +12,7 @@ done
 : "${range:?missing -r}"
 : "${out:?missing -o}"
 
-repo="${GITHUB_REPOSITORY:-ReRokutosei/Chimera}"
+repo="${GITHUB_REPOSITORY:-ReRokutosei/ChimeraWeb}"
 
 to_handle() {
   local name="$1"

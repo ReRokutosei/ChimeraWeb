@@ -45,17 +45,12 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
 
       - name: Generate release notes
-        shell: bash
+        shell: pwsh
         run: |
-          CURRENT_TAG="${RELEASE_VERSION}"
-          PREV_TAG="$(git tag --sort=-v:refname | grep -Fxv "$CURRENT_TAG" | head -n 1)"
-          if [ -z "$PREV_TAG" ]; then
-            RANGE="$CURRENT_TAG"
-          else
-            RANGE="$PREV_TAG...$CURRENT_TAG"
-          fi
-          bash .github/scripts/gen_release_notes.sh -r "$RANGE" -o release.md || \
-            echo "Chimera Web ${CURRENT_TAG}" > release.md
+          $currentTag = $env:RELEASE_VERSION
+          $prevTag = git tag --sort=-v:refname | Select-String -Pattern "^$currentTag$" -NotMatch | Select-Object -First 1
+          $range = if (-not $prevTag) { $currentTag } else { "$prevTag...$currentTag" }
+          & .github/scripts/gen_release_notes.ps1 -r "$range" -o release.md
 
       - name: Create Release
         uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda
