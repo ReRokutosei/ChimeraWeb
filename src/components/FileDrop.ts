@@ -30,15 +30,22 @@ export function loadImages(files: File[]): void {
       state.currentImageIndex = state.images.length - 1;
       state.notify('images');
     };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      alert(t('load_fail') + ': ' + file.name);
+    };
     img.src = url;
   }
 }
 
 export function removeImage(id: string): void {
-  const info = state.images.find(img => img.id === id);
-  if (info) URL.revokeObjectURL(info.src);
+  const idx = state.images.findIndex(img => img.id === id);
+  if (idx < 0) return;
+  URL.revokeObjectURL(state.images[idx].src);
   state.images = state.images.filter(img => img.id !== id);
-  if (state.currentImageIndex >= state.images.length) {
+  if (idx < state.currentImageIndex) {
+    state.currentImageIndex--;
+  } else if (state.currentImageIndex >= state.images.length) {
     state.currentImageIndex = Math.max(0, state.images.length - 1);
   }
   state.notify('images');

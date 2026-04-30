@@ -11,6 +11,7 @@ function render(): void {
   } else {
     renderResultView(app);
   }
+  state.on('view', render);
 }
 
 state.on('view', render);

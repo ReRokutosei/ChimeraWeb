@@ -42,11 +42,8 @@ export function renderImageStrip(): HTMLElement {
       thumb.appendChild(number);
       thumb.appendChild(removeBtn);
       thumb.addEventListener('click', () => {
-        const i = state.images.findIndex(x => x.id === info.id);
-        if (i >= 0) {
-          state.currentImageIndex = i;
-          state.notify('currentImage');
-        }
+        state.currentImageIndex = idx;
+        state.notify('currentImage');
       });
 
       thumb.addEventListener('dragstart', e => {
@@ -92,19 +89,7 @@ export function renderImageStrip(): HTMLElement {
     });
   }
 
-  function render(): void {
-    rebuild();
-  }
-
-  state.on('images', render);
-  state.on('currentImage', () => {
-    strip.querySelectorAll('.thumb').forEach(el => {
-      const thumb = el as HTMLElement;
-      thumb.classList.toggle('active', thumb.dataset.id === state.images[state.currentImageIndex]?.id);
-    });
-  });
-
-  render();
+  rebuild();
   container.appendChild(strip);
   return container;
 }

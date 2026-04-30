@@ -6,9 +6,14 @@ export interface ImageInfo {
   height: number;
 }
 
+export interface SplitCell {
+  blob: Blob;
+  index: number;
+}
+
 export interface SplitImageResult {
   imageName: string;
-  cells: { blob: Blob; index: number }[];
+  cells: SplitCell[];
 }
 
 type Listener = () => void;
@@ -53,6 +58,10 @@ class AppState {
 
   notify(key: string): void {
     this._listeners.get(key)?.forEach(fn => fn());
+  }
+
+  cleanup(): void {
+    this._listeners.clear();
   }
 }
 

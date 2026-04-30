@@ -1,8 +1,4 @@
-export interface SplitCell {
-  canvas: OffscreenCanvas;
-  blob: Blob;
-  index: number;
-}
+import type { SplitCell } from '../state';
 
 export async function splitGrid(
   image: ImageBitmap,
@@ -20,7 +16,7 @@ export async function splitGrid(
       const ctx = canvas.getContext('2d')!;
       ctx.drawImage(image, c * cellW, r * cellH, cellW, cellH, 0, 0, cellW, cellH);
       const blob = await canvas.convertToBlob({ type: 'image/png' });
-      cells.push({ canvas, blob, index: r * cols + c });
+      cells.push({ blob, index: r * cols + c });
     }
   }
 

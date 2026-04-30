@@ -11,6 +11,7 @@ function downloadBlob(blob: Blob, filename: string): void {
 }
 
 export function renderResultView(container: HTMLElement): void {
+  state.cleanup();
   container.innerHTML = '';
 
   const bar = document.createElement('div');

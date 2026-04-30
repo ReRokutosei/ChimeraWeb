@@ -135,7 +135,6 @@ function renderModeSection(): HTMLElement {
 function renderStitchParams(): HTMLElement {
   const card = document.createElement('div');
   card.className = 'params-card';
-  card.id = 'stitch-params';
 
   const dirRow = document.createElement('div');
   dirRow.className = 'param-row';
@@ -369,8 +368,9 @@ function showLoading(): () => void {
   return () => overlay.remove();
 }
 
-export async function renderMainView(container: HTMLElement): Promise<void> {
+export function renderMainView(container: HTMLElement): void {
   try {
+    state.cleanup();
     container.innerHTML = '';
     loadSettings();
 
@@ -395,8 +395,6 @@ export async function renderMainView(container: HTMLElement): Promise<void> {
     stripContainer.className = 'strip-wrapper';
     stripContainer.style.display = 'none';
     leftPanel.appendChild(stripContainer);
-
-    mainContent.appendChild(leftPanel);
 
     // ─── Right Panel (40%) ───
     const rightPanel = document.createElement('div');
@@ -439,7 +437,7 @@ export async function renderMainView(container: HTMLElement): Promise<void> {
             const cells = await splitGrid(bitmap, state.cutGrid);
             results.push({
               imageName: info.name,
-              cells: cells.map(c => ({ blob: c.blob, index: c.index }))
+              cells
             });
           }
           state.splitResults = results;
@@ -500,6 +498,13 @@ export async function renderMainView(container: HTMLElement): Promise<void> {
     }
 
     state.on('images', updateUI);
+    state.on('currentImage', () => {
+      stripContainer.querySelectorAll('.thumb').forEach(el => {
+        const thumb = el as HTMLElement;
+        thumb.classList.toggle('active', thumb.dataset.id === state.images[state.currentImageIndex]?.id);
+      });
+    });
+
     updateUI();
   } catch (e) {
     console.error('[MainView] ERROR:', e);
