@@ -88,6 +88,7 @@ function renderDropZoneCard(onFiles: (files: File[]) => void): HTMLElement {
       <line x1="12" y1="3" x2="12" y2="15"/>
     </svg>
     <div class="hint">${t('drop_hint')}<br><small>${t('drop_hint_small')}</small></div>
+    <div class="hint-mobile">${t('tap_to_add')}</div>
   `;
   setupDropHandlers(zone, onFiles);
   zone.addEventListener('click', () => openFilePicker(onFiles));
@@ -421,6 +422,9 @@ export async function renderMainView(container: HTMLElement): Promise<void> {
     paramsScroll.appendChild(renderOutputParams());
     rightPanel.appendChild(paramsScroll);
 
+    mainContent.appendChild(leftPanel);
+    mainContent.appendChild(rightPanel);
+
     const actionBar = renderActionBar(async () => {
       if (state.images.length === 0) return;
       if (!state.isCutMode && state.images.length <= 1) return;
@@ -477,9 +481,7 @@ export async function renderMainView(container: HTMLElement): Promise<void> {
         hide();
       }
     });
-    rightPanel.appendChild(actionBar);
-
-    mainContent.appendChild(rightPanel);
+    mainContent.appendChild(actionBar);
     container.appendChild(mainContent);
 
     function updateUI(): void {
@@ -487,7 +489,7 @@ export async function renderMainView(container: HTMLElement): Promise<void> {
       const hasImages = state.images.length > 0;
       const dz = renderDropZoneCard(files => loadImages(files));
       dropContainer.appendChild(dz);
-      dropContainer.style.flex = hasImages ? '0 0 50%' : '1';
+      dropContainer.style.flex = hasImages ? '0 0 auto' : '1';
 
       stripContainer.style.display = hasImages ? '' : 'none';
       stripContainer.innerHTML = '';

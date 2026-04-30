@@ -210,6 +210,10 @@ input[type="number"]:focus {
   line-height: 1.6;
 }
 
+.drop-zone .hint-mobile {
+  display: none;
+}
+
 .drop-zone .hint small {
   font-size: 12px;
   opacity: 0.7;
@@ -415,12 +419,6 @@ input[type="number"]:focus {
 
 /* ─── Action Bar ─── */
 
-.action-bar {
-  display: flex;
-  gap: 12px;
-  margin-top: 20px;
-}
-
 .action-bar .action-btn {
   flex: 1;
   padding: 14px;
@@ -556,18 +554,20 @@ input[type="number"]:focus {
   to { transform: rotate(360deg); }
 }
 
-/* ─── 60/40 Split Layout ─── */
+/* ─── 55/45 Grid Layout ─── */
 
 .main-content {
-  display: flex;
+  display: grid;
+  grid-template-columns: 55% 1fr;
   gap: 16px;
   flex: 1;
   min-height: 0;
   padding-top: 16px;
+  align-content: start;
 }
 
 .left-panel {
-  flex: 0 0 55%;
+  grid-column: 1;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -575,11 +575,20 @@ input[type="number"]:focus {
 }
 
 .right-panel {
-  flex: 0 0 calc(45% - 16px);
+  grid-column: 2;
+  grid-row: 1;
   display: flex;
   flex-direction: column;
   gap: 12px;
   min-height: 0;
+}
+
+.action-bar {
+  grid-column: 2;
+  grid-row: 2;
+  display: flex;
+  gap: 12px;
+  margin-top: 4px;
 }
 
 .drop-area {
@@ -610,11 +619,125 @@ input[type="number"]:focus {
 
 /* ─── Responsive ─── */
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
   #app {
     padding: 0 12px;
+    height: auto;
+    min-height: 100vh;
+    overflow-x: hidden;
   }
+
+  .main-content {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .left-panel {
+    grid-column: 1;
+    grid-row: 2;
+    gap: 8px;
+  }
+
+  .right-panel {
+    grid-column: 1;
+    grid-row: 1;
+    gap: 8px;
+  }
+
+  .action-bar {
+    grid-column: 1;
+    grid-row: 3;
+    margin-top: 8px;
+    padding-bottom: 16px;
+  }
+
+  .drop-zone,
+  .drop-area .drop-zone {
+    min-height: 0;
+    padding: 12px 16px;
+    margin-top: 8px;
+    flex: none;
+    flex-direction: row;
+    gap: 6px;
+    border: 1px solid var(--primary);
+    border-radius: var(--radius);
+    background: var(--primary);
+    color: var(--primary-text);
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .drop-zone .icon {
+    width: 18px;
+    height: 18px;
+    color: var(--primary-text);
+  }
+
+  .drop-zone .hint {
+    display: none;
+  }
+
+  .drop-zone .hint-mobile {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--primary-text);
+  }
+
+  .image-strip .thumb {
+    flex: 0 0 calc(33.33% - 6px);
+  }
+
+  .strip-wrapper {
+    max-height: 240px;
+    overflow-y: auto;
+  }
+
+  .params-scroll {
+    overflow-y: visible;
+  }
+
   .param-row {
     gap: 8px;
+    flex-wrap: wrap;
+    min-width: 0;
+  }
+
+  .segmented-control {
+    flex-shrink: 1;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .top-bar .logo {
+    font-size: 14px;
+  }
+
+  .top-bar .icon-btn {
+    width: 32px;
+    height: 32px;
+  }
+
+  .mode-section {
+    margin-top: 8px;
+  }
+
+  .params-card {
+    padding: 10px;
+    gap: 8px;
+  }
+
+  .segmented-btn {
+    padding: 4px 10px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 600px) {
+  #app {
+    padding: 0 8px;
+  }
+  .param-row {
+    gap: 6px;
   }
 }
