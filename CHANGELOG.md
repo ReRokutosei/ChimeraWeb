@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.0.1](https://github.com/ReRokutosei/ChimeraWeb/compare/v1.0.0...v1.0.1) (2026-04-30)
+
+
+### Features
+
+* 响应式布局(桌面Grid 55/45 + 移动端单列) ([156226f](https://github.com/ReRokutosei/ChimeraWeb/commit/156226f9b8711c1675682ec43dd172dca70ac742))
+
 ## 1.0.0 (2026-04-29)
 
 
