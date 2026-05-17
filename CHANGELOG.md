@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.0.3](https://github.com/ReRokutosei/ChimeraWeb/compare/v1.0.2...v1.0.3) (2026-05-17)
+
+
+### Features
+
+* i18n、theme改进 ([0e94dc4](https://github.com/ReRokutosei/ChimeraWeb/commit/0e94dc4bd54f06f440e9d90b551b2c6f360a5cfd))
+
+
+### Bug Fixes
+
+* 修复Tauri桌面端文件拖拽无效 ([d6c4980](https://github.com/ReRokutosei/ChimeraWeb/commit/d6c49804b41ba9bdc55088f382b48c8ca3efbd84))
+
 ### [1.0.2](https://github.com/ReRokutosei/ChimeraWeb/compare/v1.0.1...v1.0.2) (2026-04-30)
 
 
