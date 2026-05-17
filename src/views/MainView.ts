@@ -2,7 +2,8 @@ import { state, type SplitImageResult } from '../state';
 import {
   loadSettings, saveStitchMode, saveWidthScale, saveOverlayMode,
   saveOverlayArea, saveImageSpacing, saveSpacingColor,
-  saveCutGrid, saveOutputFormat, saveOutputQuality
+  saveCutGrid, saveOutputFormat, saveOutputQuality,
+  getTheme, saveTheme, applyThemeDOM, type Theme
 } from '../storage';
 import { loadImages } from '../components/FileDrop';
 import { renderImageStrip } from '../components/ImageStrip';
@@ -44,17 +45,57 @@ function renderTopBar(): HTMLElement {
   langBtn.addEventListener('click', toggleLocale);
   actions.appendChild(langBtn);
 
-  // Theme toggle
+  // Theme toggle with popover
+  const themeContainer = document.createElement('div');
+  themeContainer.className = 'theme-container';
+
   const themeBtn = document.createElement('button');
   themeBtn.className = 'icon-btn';
   updateThemeIcon(themeBtn);
   themeBtn.title = t('toggle_theme');
-  themeBtn.addEventListener('click', () => {
-    const current = document.documentElement.getAttribute('data-theme');
-    document.documentElement.setAttribute('data-theme', current === 'dark' ? '' : 'dark');
-    updateThemeIcon(themeBtn);
+
+  const popover = document.createElement('div');
+  popover.className = 'theme-popover hidden';
+  popover.innerHTML = `
+    <button class="theme-option" data-theme="light">
+      ${SUN_SVG}
+    </button>
+    <button class="theme-option" data-theme="auto">
+      <span class="material-symbols-outlined" style="font-size:18px">brightness_auto</span>
+    </button>
+    <button class="theme-option" data-theme="dark">
+      ${MOON_SVG}
+    </button>
+  `;
+
+  function highlightActive(): void {
+    const theme = getTheme();
+    popover.querySelectorAll('.theme-option').forEach(el => {
+      const btn = el as HTMLElement;
+      btn.classList.toggle('active', btn.dataset.theme === theme);
+    });
+  }
+
+  themeBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    popover.classList.toggle('hidden');
+    highlightActive();
   });
-  actions.appendChild(themeBtn);
+
+  popover.querySelectorAll('.theme-option').forEach(el => {
+    el.addEventListener('click', () => {
+      const theme = (el as HTMLElement).dataset.theme as Theme;
+      saveTheme(theme);
+      updateThemeIcon(themeBtn);
+      popover.classList.add('hidden');
+    });
+  });
+
+  document.addEventListener('click', () => popover.classList.add('hidden'));
+
+  themeContainer.appendChild(themeBtn);
+  themeContainer.appendChild(popover);
+  actions.appendChild(themeContainer);
 
   // GitHub link
   const ghBtn = document.createElement('a');
@@ -71,11 +112,16 @@ function renderTopBar(): HTMLElement {
   return bar;
 }
 
+const SUN_SVG = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>';
+const MOON_SVG = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>';
+
 function updateThemeIcon(btn: HTMLElement): void {
-  const dark = document.documentElement.getAttribute('data-theme') === 'dark';
-  btn.innerHTML = dark
-    ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>'
-    : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>';
+  const theme = getTheme();
+  if (theme === 'auto') {
+    btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:20px">brightness_auto</span>';
+  } else {
+    btn.innerHTML = theme === 'dark' ? MOON_SVG : SUN_SVG;
+  }
 }
 
 function renderDropZoneCard(onFiles: (files: File[]) => void): HTMLElement {
@@ -368,11 +414,25 @@ function showLoading(): () => void {
   return () => overlay.remove();
 }
 
+let _systemThemeListenerInstalled = false;
+
+function installSystemThemeListener(): void {
+  if (_systemThemeListenerInstalled) return;
+  _systemThemeListenerInstalled = true;
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+    if (getTheme() === 'auto') {
+      applyThemeDOM('auto');
+    }
+  });
+}
+
 export function renderMainView(container: HTMLElement): void {
   try {
     state.cleanup();
     container.innerHTML = '';
     loadSettings();
+    applyThemeDOM(getTheme());
+    installSystemThemeListener();
 
     // Top bar
     container.appendChild(renderTopBar());

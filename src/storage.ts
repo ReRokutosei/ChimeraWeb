@@ -49,3 +49,23 @@ export function saveOutputFormat(v: typeof state.outputFormat): void {
 export function saveOutputQuality(v: number): void {
   state.outputQuality = v; set('output_quality', v);
 }
+
+export type Theme = 'light' | 'dark' | 'auto';
+
+export function getTheme(): Theme {
+  const v = localStorage.getItem('chimera_theme');
+  if (v === 'light' || v === 'dark' || v === 'auto') return v;
+  return 'auto';
+}
+
+export function saveTheme(v: Theme): void {
+  localStorage.setItem('chimera_theme', v);
+  applyThemeDOM(v);
+}
+
+export function applyThemeDOM(theme: Theme): void {
+  const isDark = theme === 'auto'
+    ? window.matchMedia('(prefers-color-scheme: dark)').matches
+    : theme === 'dark';
+  document.documentElement.setAttribute('data-theme', isDark ? 'dark' : '');
+}

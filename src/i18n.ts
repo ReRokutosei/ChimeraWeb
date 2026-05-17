@@ -1,4 +1,9 @@
-const locale = localStorage.getItem('chimera_locale') === 'en' ? 'en' : 'zh';
+function resolveLocale(): string {
+  const stored = localStorage.getItem('chimera_locale');
+  if (stored === 'en' || stored === 'zh') return stored;
+  return navigator.language.toLowerCase().startsWith('zh') ? 'zh' : 'en';
+}
+const locale = resolveLocale();
 
 type Messages = Record<string, string>;
 

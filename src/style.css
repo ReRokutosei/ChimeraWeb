@@ -105,6 +105,14 @@ input[type="number"]:focus {
   display: none !important;
 }
 
+.material-symbols-outlined {
+  font-variation-settings:
+    'FILL' 0,
+    'wght' 400,
+    'GRAD' 0,
+    'opsz' 24;
+}
+
 /* ─── Top Bar ─── */
 
 .top-bar {
@@ -736,4 +744,60 @@ input[type="number"]:focus {
   .param-row {
     gap: 6px;
   }
+}
+
+/* ─── Theme Popover ─── */
+
+.theme-container {
+  position: relative;
+}
+
+.theme-popover {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 4px 16px var(--shadow);
+  padding: 4px;
+  display: flex;
+  gap: 2px;
+  z-index: 50;
+  opacity: 0;
+  transform: scale(0.92);
+  transform-origin: top right;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  pointer-events: none;
+}
+
+.theme-popover:not(.hidden) {
+  opacity: 1;
+  transform: scale(1);
+  pointer-events: auto;
+}
+
+.theme-popover .theme-option {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  color: var(--text-secondary);
+  transition: background var(--transition), color var(--transition);
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+.theme-popover .theme-option:hover {
+  background: var(--bg-secondary);
+  color: var(--text);
+}
+
+.theme-popover .theme-option.active {
+  background: var(--bg-tertiary);
+  color: var(--primary);
 }
