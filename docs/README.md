@@ -1,4 +1,6 @@
 # Chimera Web
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FReRokutosei%2FChimeraWeb.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FReRokutosei%2FChimeraWeb?ref=badge_shield)
+
 
 **English | [简体中文](README_CN.md)**
 
@@ -71,3 +73,6 @@ npm run tauri build  # → src-tauri/target/release/bundle/nsis/
 ## Acknowledgments
 
 App icon designed by [Freepik](https://www.freepik.com/icon/animal_13228011).
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FReRokutosei%2FChimeraWeb.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2FReRokutosei%2FChimeraWeb?ref=badge_large)
