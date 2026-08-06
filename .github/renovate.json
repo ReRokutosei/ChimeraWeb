@@ -1,0 +1,45 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+
+  "labels": ["dependency"],
+  "prConcurrentLimit": 10,
+
+  "packageRules": [
+    {
+      "description": "npm dependencies",
+      "matchFileNames": ["**/package.json"],
+      "labels": ["npm"]
+    },
+    {
+      "description": "Cargo dependencies",
+      "matchFileNames": ["**/Cargo.toml"],
+      "labels": ["cargo", "rust"]
+    },
+    {
+      "description": "GitHub Actions",
+      "matchManagers": ["github-actions"],
+      "labels": ["github-actions"]
+    },
+
+    {
+      "description": "Automerge all patch updates",
+      "matchUpdateTypes": ["patch"],
+      "automerge": true
+    },
+
+    {
+      "description": "Automerge minor for safe runtime libraries",
+      "matchUpdateTypes": ["minor"],
+      "matchPackagePatterns": [
+        "^@tauri-apps/",
+        "^typescript$",
+        "^@types/"
+      ],
+      "excludePackagePatterns": [
+        "alpha", "beta", "rc"
+      ],
+      "automerge": true
+    }
+  ]
+}
