@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.0.4](https://github.com/ReRokutosei/ChimeraWeb/compare/v1.0.3...v1.0.4) (2026-08-15)
+
+
+### Features
+
+* native file saving and Web compatibility fallback ([401a6ce](https://github.com/ReRokutosei/ChimeraWeb/commit/401a6ce4cfb8e412e729fd4cc38d48e1a80af35e))
+
 ### [1.0.3](https://github.com/ReRokutosei/ChimeraWeb/compare/v1.0.2...v1.0.3) (2026-05-17)
 
 
