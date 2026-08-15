@@ -42,6 +42,8 @@ class AppState {
   spacingColor = '#000000';
   outputFormat: 'png' | 'jpeg' | 'webp' = 'png';
   outputQuality = 90;
+  defaultSaveDir = '';
+  alwaysPromptSave = true;
 
   on(key: string, fn: Listener): void {
     let set = this._listeners.get(key);

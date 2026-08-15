@@ -1,5 +1,8 @@
 import { state } from '../state';
 import { t } from '../i18n';
+import { save, open as openDialog } from '@tauri-apps/plugin-dialog';
+import { invoke } from '@tauri-apps/api/core';
+import { isDesktop } from '../env';
 
 function downloadBlob(blob: Blob, filename: string): void {
   const url = URL.createObjectURL(blob);
@@ -8,6 +11,36 @@ function downloadBlob(blob: Blob, filename: string): void {
   a.download = filename;
   a.click();
   URL.revokeObjectURL(url);
+}
+
+async function saveBlobNative(blob: Blob, defaultFilename: string): Promise<void> {
+  if (!isDesktop()) {
+    downloadBlob(blob, defaultFilename);
+    return;
+  }
+  try {
+    const ext = defaultFilename.split('.').pop() || '';
+    
+    let targetPath = '';
+    if (!state.alwaysPromptSave && state.defaultSaveDir) {
+      const sep = state.defaultSaveDir.includes('\\') ? '\\' : '/';
+      targetPath = state.defaultSaveDir.endsWith(sep) ? `${state.defaultSaveDir}${defaultFilename}` : `${state.defaultSaveDir}${sep}${defaultFilename}`;
+    } else {
+      const p = await save({
+        defaultPath: state.defaultSaveDir ? `${state.defaultSaveDir}/${defaultFilename}` : defaultFilename,
+        filters: [{ name: 'Image', extensions: [ext] }]
+      });
+      if (p) targetPath = p;
+    }
+
+    if (targetPath) {
+      const arr = new Uint8Array(await blob.arrayBuffer());
+      await invoke('save_file_bypass', { path: targetPath, data: Array.from(arr) });
+    }
+  } catch (e) {
+    console.error('Failed to save file', e);
+    alert(t('fail') + ': ' + e);
+  }
 }
 
 export function renderResultView(container: HTMLElement): void {
@@ -69,7 +102,7 @@ function renderStitchResult(container: HTMLElement): void {
   const ext = extMap[state.resultFormat] || 'png';
   saveBtn.textContent = t('save_as', { fmt: state.resultFormat.toUpperCase() });
   saveBtn.addEventListener('click', () => {
-    downloadBlob(state.resultBlob!, `chimera_stitch_${Date.now()}.${ext}`);
+    saveBlobNative(state.resultBlob!, `chimera_stitch_${Date.now()}.${ext}`);
   });
   actions.appendChild(saveBtn);
   container.appendChild(actions);
@@ -134,12 +167,43 @@ function renderSplitResultUI(container: HTMLElement): void {
     saveAllBtn.className = 'download-btn';
     saveAllBtn.textContent = t('save_all');
     saveAllBtn.title = t('save_all_title', { n: total });
-    saveAllBtn.addEventListener('click', () => {
-      for (const r of results) {
-        const baseName = r.imageName.replace(/\.[^.]+$/, '');
-        for (const cell of r.cells) {
-          downloadBlob(cell.blob, `${baseName}_cell_${cell.index + 1}.png`);
+    saveAllBtn.addEventListener('click', async () => {
+      if (!isDesktop()) {
+        for (const r of results) {
+          const baseName = r.imageName.replace(/\.[^.]+$/, '');
+          for (const cell of r.cells) {
+            downloadBlob(cell.blob, `${baseName}_cell_${cell.index + 1}.png`);
+          }
         }
+        return;
+      }
+
+      let targetDir = state.defaultSaveDir;
+      if (state.alwaysPromptSave || !targetDir) {
+        const selected = await openDialog({
+          directory: true,
+          multiple: false,
+          defaultPath: state.defaultSaveDir || undefined,
+        });
+        if (!selected || typeof selected !== 'string') return;
+        targetDir = selected;
+      }
+
+      try {
+        for (const r of results) {
+          const baseName = r.imageName.replace(/\.[^.]+$/, '');
+          for (const cell of r.cells) {
+            const arr = new Uint8Array(await cell.blob.arrayBuffer());
+            const fileName = `${baseName}_cell_${cell.index + 1}.png`;
+            const sep = targetDir.includes('\\') ? '\\' : '/';
+            const fullPath = targetDir.endsWith(sep) ? `${targetDir}${fileName}` : `${targetDir}${sep}${fileName}`;
+            await invoke('save_file_bypass', { path: fullPath, data: Array.from(arr) });
+          }
+        }
+        alert(t('saved_to', { path: targetDir }));
+      } catch (e) {
+        console.error('Failed to save all', e);
+        alert(t('fail') + ': ' + e);
       }
     });
     saveRow.appendChild(saveAllBtn);
@@ -149,10 +213,39 @@ function renderSplitResultUI(container: HTMLElement): void {
   saveCurrentBtn.className = 'download-btn';
   saveCurrentBtn.textContent = t('save_current');
   saveCurrentBtn.title = t('save_current_title', { name: current.imageName });
-  saveCurrentBtn.addEventListener('click', () => {
-    const baseName = current.imageName.replace(/\.[^.]+$/, '');
-    for (const cell of current.cells) {
-      downloadBlob(cell.blob, `${baseName}_cell_${cell.index + 1}.png`);
+  saveCurrentBtn.addEventListener('click', async () => {
+    if (!isDesktop()) {
+      const baseName = current.imageName.replace(/\.[^.]+$/, '');
+      for (const cell of current.cells) {
+        downloadBlob(cell.blob, `${baseName}_cell_${cell.index + 1}.png`);
+      }
+      return;
+    }
+
+    let targetDir = state.defaultSaveDir;
+    if (state.alwaysPromptSave || !targetDir) {
+      const selected = await openDialog({
+        directory: true,
+        multiple: false,
+        defaultPath: state.defaultSaveDir || undefined,
+      });
+      if (!selected || typeof selected !== 'string') return;
+      targetDir = selected;
+    }
+
+    try {
+      const baseName = current.imageName.replace(/\.[^.]+$/, '');
+      for (const cell of current.cells) {
+        const arr = new Uint8Array(await cell.blob.arrayBuffer());
+        const fileName = `${baseName}_cell_${cell.index + 1}.png`;
+        const sep = targetDir.includes('\\') ? '\\' : '/';
+        const fullPath = targetDir.endsWith(sep) ? `${targetDir}${fileName}` : `${targetDir}${sep}${fileName}`;
+        await invoke('save_file_bypass', { path: fullPath, data: Array.from(arr) });
+      }
+      alert(t('saved_to', { path: targetDir }));
+    } catch (e) {
+      console.error('Failed to save current', e);
+      alert(t('fail') + ': ' + e);
     }
   });
   saveRow.appendChild(saveCurrentBtn);
@@ -176,7 +269,7 @@ function renderSplitResultUI(container: HTMLElement): void {
     cImg.alt = `cell_${cell.index}`;
     cImg.addEventListener('click', () => {
       const baseName = current.imageName.replace(/\.[^.]+$/, '');
-      downloadBlob(cell.blob, `${baseName}_cell_${cell.index + 1}.png`);
+      saveBlobNative(cell.blob, `${baseName}_cell_${cell.index + 1}.png`);
     });
     cImg.title = '点击下载';
     cellDiv.appendChild(cImg);

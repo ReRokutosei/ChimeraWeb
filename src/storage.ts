@@ -20,6 +20,8 @@ export function loadSettings(): void {
   state.cutGrid = get('cut_grid', 3);
   state.outputFormat = get('output_format', 'png');
   state.outputQuality = get('output_quality', 90);
+  state.defaultSaveDir = get('default_save_dir', '');
+  state.alwaysPromptSave = get('always_prompt_save', true);
 }
 
 export function saveStitchMode(v: typeof state.stitchMode): void {
@@ -48,6 +50,12 @@ export function saveOutputFormat(v: typeof state.outputFormat): void {
 }
 export function saveOutputQuality(v: number): void {
   state.outputQuality = v; set('output_quality', v);
+}
+export function saveDefaultSaveDir(v: string): void {
+  state.defaultSaveDir = v; set('default_save_dir', v); state.notify('exportSettings');
+}
+export function saveAlwaysPromptSave(v: boolean): void {
+  state.alwaysPromptSave = v; set('always_prompt_save', v);
 }
 
 export type Theme = 'light' | 'dark' | 'auto';

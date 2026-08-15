@@ -55,6 +55,11 @@ const messages: Record<string, Messages> = {
     lang_zh: '中文',
     lang_en: 'English',
     github: 'GitHub 仓库',
+    export_settings: '导出设置',
+    default_dir: '默认保存目录',
+    select_dir: '选择',
+    always_prompt: '始终询问保存位置',
+    saved_to: '已保存至 {path}',
   },
   en: {
     stitch: 'Stitch',
@@ -103,6 +108,11 @@ const messages: Record<string, Messages> = {
     lang_zh: '中文',
     lang_en: 'English',
     github: 'GitHub repository',
+    export_settings: 'Export Settings',
+    default_dir: 'Default Directory',
+    select_dir: 'Select',
+    always_prompt: 'Always ask where to save',
+    saved_to: 'Saved to {path}',
   },
 };
 

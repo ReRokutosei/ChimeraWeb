@@ -3,8 +3,10 @@ import {
   loadSettings, saveStitchMode, saveWidthScale, saveOverlayMode,
   saveOverlayArea, saveImageSpacing, saveSpacingColor,
   saveCutGrid, saveOutputFormat, saveOutputQuality,
+  saveDefaultSaveDir, saveAlwaysPromptSave,
   getTheme, saveTheme, applyThemeDOM, type Theme
 } from '../storage';
+import { open } from '@tauri-apps/plugin-dialog';
 import { loadImages } from '../components/FileDrop';
 import { renderImageStrip } from '../components/ImageStrip';
 import { renderColorPicker } from '../components/ColorPicker';
@@ -12,6 +14,7 @@ import { renderSegmentedControl } from '../components/SegmentedBtn';
 import { stitchImages } from '../engine/stitch';
 import { splitGrid } from '../engine/split';
 import { t, toggleLocale } from '../i18n';
+import { isDesktop } from '../env';
 
 const CIRCLE_COLORS = ['#FF6496', '#FABE00', '#E60046', '#006EBE'];
 
@@ -354,6 +357,71 @@ function renderOutputParams(): HTMLElement {
   return card;
 }
 
+function renderExportParams(): HTMLElement {
+  const card = document.createElement('div');
+  card.className = 'params-card';
+  card.id = 'export-params';
+
+  const title = document.createElement('div');
+  title.style.cssText = 'font-size: 13px; font-weight: bold; margin-bottom: 8px; color: var(--text-secondary);';
+  title.textContent = t('export_settings');
+  card.appendChild(title);
+
+  const dirRow = document.createElement('div');
+  dirRow.className = 'param-row';
+  dirRow.style.alignItems = 'center';
+  dirRow.appendChild(createLabel(t('default_dir')));
+
+  const dirDisplay = document.createElement('div');
+  dirDisplay.style.cssText = 'flex:1; font-size:12px; color:var(--text-secondary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-right:8px; text-align:right;';
+  dirDisplay.textContent = state.defaultSaveDir || '--';
+  dirDisplay.title = state.defaultSaveDir;
+  dirRow.appendChild(dirDisplay);
+
+  const dirBtn = document.createElement('button');
+  dirBtn.className = 'segmented-btn';
+  dirBtn.style.padding = '4px 8px';
+  dirBtn.textContent = t('select_dir');
+  dirBtn.addEventListener('click', async () => {
+    try {
+      const selected = await open({
+        directory: true,
+        multiple: false,
+        defaultPath: state.defaultSaveDir || undefined,
+      });
+      if (selected && typeof selected === 'string') {
+        saveDefaultSaveDir(selected);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  });
+  dirRow.appendChild(dirBtn);
+  card.appendChild(dirRow);
+
+  state.on('exportSettings', () => {
+    dirDisplay.textContent = state.defaultSaveDir || '--';
+    dirDisplay.title = state.defaultSaveDir;
+  });
+
+  const promptRow = document.createElement('div');
+  promptRow.className = 'param-row';
+  promptRow.style.justifyContent = 'space-between';
+  promptRow.appendChild(createLabel(t('always_prompt')));
+
+  const promptInput = document.createElement('input');
+  promptInput.type = 'checkbox';
+  promptInput.checked = state.alwaysPromptSave;
+  promptInput.style.cursor = 'pointer';
+  promptInput.addEventListener('change', () => {
+    saveAlwaysPromptSave(promptInput.checked);
+  });
+  promptRow.appendChild(promptInput);
+  card.appendChild(promptRow);
+
+  return card;
+}
+
 function createLabel(text: string): HTMLElement {
   const el = document.createElement('span');
   el.className = 'param-label';
@@ -478,6 +546,9 @@ export function renderMainView(container: HTMLElement): void {
     paramsScroll.appendChild(cutParams);
 
     paramsScroll.appendChild(renderOutputParams());
+    if (isDesktop()) {
+      paramsScroll.appendChild(renderExportParams());
+    }
     rightPanel.appendChild(paramsScroll);
 
     mainContent.appendChild(leftPanel);
