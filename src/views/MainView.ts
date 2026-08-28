@@ -2,7 +2,7 @@ import { state, type SplitImageResult } from '../state';
 import {
   loadSettings, saveStitchMode, saveWidthScale, saveOverlayMode,
   saveOverlayArea, saveImageSpacing, saveSpacingColor,
-  saveCutGrid, saveOutputFormat, saveOutputQuality,
+  saveCutPreset, saveOutputFormat, saveOutputQuality,
   saveDefaultSaveDir, saveAlwaysPromptSave,
   getTheme, saveTheme, applyThemeDOM, type Theme
 } from '../storage';
@@ -304,11 +304,16 @@ function renderCutParams(): HTMLElement {
 
   const row = document.createElement('div');
   row.className = 'param-row';
-  row.appendChild(createLabel(t('grid_label')));
+  row.appendChild(createLabel(t('cut_preset_label')));
   const gridCtrl = renderSegmentedControl(
-    [{ label: t('grid_2x2'), value: '2' }, { label: t('grid_3x3'), value: '3' }],
-    String(state.cutGrid),
-    val => { saveCutGrid(Number(val)); }
+    [
+      { label: t('grid_2x2'), value: 'grid2' },
+      { label: t('grid_3x3'), value: 'grid3' },
+      { label: t('preset_x3'), value: 'x3' },
+      { label: t('preset_x4'), value: 'x4' }
+    ],
+    state.cutPreset,
+    val => { saveCutPreset(val as typeof state.cutPreset); }
   );
   row.appendChild(gridCtrl);
   card.appendChild(row);
@@ -565,9 +570,12 @@ export function renderMainView(container: HTMLElement): void {
           for (const info of state.images) {
             const blob = await (await fetch(info.src)).blob();
             const bitmap = await createImageBitmap(blob);
-            const cells = await splitGrid(bitmap, state.cutGrid);
+            const { rows, cols, cells } = await splitGrid(bitmap, state.cutPreset);
             results.push({
               imageName: info.name,
+              preset: state.cutPreset,
+              rows,
+              cols,
               cells
             });
           }

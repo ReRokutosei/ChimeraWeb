@@ -17,6 +17,7 @@ export function loadSettings(): void {
   state.overlayMode = get('overlay_mode', 'DISABLED');
   state.imageSpacing = get('image_spacing', 0);
   state.spacingColor = get('spacing_color', '#000000');
+  state.cutPreset = get('cut_preset', 'x4');
   state.cutGrid = get('cut_grid', 3);
   state.outputFormat = get('output_format', 'png');
   state.outputQuality = get('output_quality', 90);
@@ -41,6 +42,9 @@ export function saveImageSpacing(v: number): void {
 }
 export function saveSpacingColor(v: string): void {
   state.spacingColor = v; set('spacing_color', v); state.notify('spacingColor');
+}
+export function saveCutPreset(v: typeof state.cutPreset): void {
+  state.cutPreset = v; set('cut_preset', v); state.notify('cutPreset');
 }
 export function saveCutGrid(v: number): void {
   state.cutGrid = v; set('cut_grid', v);

@@ -6,6 +6,8 @@ export interface ImageInfo {
   height: number;
 }
 
+export type CutPreset = 'grid2' | 'grid3' | 'x3' | 'x4';
+
 export interface SplitCell {
   blob: Blob;
   index: number;
@@ -13,6 +15,9 @@ export interface SplitCell {
 
 export interface SplitImageResult {
   imageName: string;
+  preset: CutPreset;
+  rows: number;
+  cols: number;
   cells: SplitCell[];
 }
 
@@ -23,6 +28,7 @@ class AppState {
 
   view: 'main' | 'result' = 'main';
   isCutMode = false;
+  cutPreset: CutPreset = 'x4';
   cutGrid = 3;
   images: ImageInfo[] = [];
   currentImageIndex = 0;
