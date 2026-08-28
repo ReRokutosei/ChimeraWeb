@@ -2,7 +2,7 @@
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FReRokutosei%2FChimeraWeb.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FReRokutosei%2FChimeraWeb?ref=badge_shield)
 
 
-**English | [简体中文](README_CN.md)**
+**English | [中文](README_CN.md) | [日本語](README_JA.md) | [한국어](README_KO.md)**
 
 A lightweight desktop image stitching and cutting tool, all processing stays local.
 
@@ -16,13 +16,13 @@ A lightweight desktop image stitching and cutting tool, all processing stays loc
 ## Features
 
 - **Stitch**: Combine multiple images vertically or horizontally, with configurable gap, fill color, and overlay mode.
-- **Cut**: Split a single image into a 2×2 or 3×3 grid.
+- **Cut**: Split a single image into a 2×2 or 3×3 grid, or 1×3 and 1×4 panoramic equal slices (with single export & ZIP batch download).
 - **Scale**: Choose between min-width, no scale, or max-width alignment.
 - **Formats**: Input/output support for JPEG, PNG, and WebP. Adjustable quality for JPEG/WebP.
 - **Drag & drop**: Drop images directly onto the workspace or click to browse.
 - **Dark mode**: Built-in light/dark theme toggle.
-- **i18n**: English and Chinese (中文) interface.
-- **Privacy**: No telemetry.
+- **i18n**: English, Chinese, Japanese, and Korean interface.
+- **Privacy**: Fully client-side processing, no telemetry.
 
 ## Tech Stack
 
