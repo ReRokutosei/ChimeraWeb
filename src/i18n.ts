@@ -1,19 +1,25 @@
 export type Locale = 'zh' | 'en' | 'ja' | 'ko';
 
 function resolveLocale(): Locale {
-  const stored = localStorage.getItem('chimera_locale') as Locale | null;
-  if (stored === 'en' || stored === 'zh' || stored === 'ja' || stored === 'ko') return stored;
-  const nav = navigator.language.toLowerCase();
-  if (nav.startsWith('zh')) return 'zh';
-  if (nav.startsWith('ja')) return 'ja';
-  if (nav.startsWith('ko')) return 'ko';
+  try {
+    if (typeof localStorage !== 'undefined') {
+      const stored = localStorage.getItem('chimera_locale') as Locale | null;
+      if (stored === 'en' || stored === 'zh' || stored === 'ja' || stored === 'ko') return stored;
+    }
+    if (typeof navigator !== 'undefined') {
+      const nav = navigator.language.toLowerCase();
+      if (nav.startsWith('zh')) return 'zh';
+      if (nav.startsWith('ja')) return 'ja';
+      if (nav.startsWith('ko')) return 'ko';
+    }
+  } catch {}
   return 'en';
 }
 const locale: Locale = resolveLocale();
 
 type Messages = Record<string, string>;
 
-const messages: Record<Locale, Messages> = {
+export const messages: Record<Locale, Messages> = {
   zh: {
     stitch: '拼接',
     cut: '切割',

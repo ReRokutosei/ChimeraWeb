@@ -1,6 +1,6 @@
 import type { SplitCell, CutPreset } from '../state';
 
-function computeSegments(total: number, n: number): { start: number; size: number }[] {
+export function computeSegments(total: number, n: number): { start: number; size: number }[] {
   const base = Math.floor(total / n);
   const rem = total % n;
   let pos = 0;

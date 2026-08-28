@@ -14,11 +14,11 @@ export interface StitchResult {
 }
 
 type ImgSrc = ImageBitmap;
-type Dims = { img: ImgSrc; w: number; h: number };
+export type Dims = { img?: ImgSrc; w: number; h: number };
 
-function getScaledDimensions(images: ImgSrc[], direction: string, scale: string): Dims[] {
+export function getScaledDimensions(images: { width: number; height: number; img?: ImgSrc }[], direction: string, scale: string): Dims[] {
   const dims: Dims[] = images.map(img => ({
-    img,
+    img: img.img,
     w: img.width,
     h: img.height
   }));
@@ -75,7 +75,7 @@ async function stitchVertical(scaled: Dims[], options: StitchOptions): Promise<S
 
   let y = 0;
   for (const d of scaled) {
-    ctx.drawImage(d.img, 0, 0, d.img.width, d.img.height, 0, y, d.w, d.h);
+    ctx.drawImage(d.img!, 0, 0, d.img!.width, d.img!.height, 0, y, d.w, d.h);
     y += d.h;
     if (options.spacing > 0) {
       ctx.fillStyle = options.spacingColor;
@@ -96,7 +96,7 @@ async function stitchHorizontal(scaled: Dims[], options: StitchOptions): Promise
 
   let x = 0;
   for (const d of scaled) {
-    ctx.drawImage(d.img, 0, 0, d.img.width, d.img.height, x, 0, d.w, d.h);
+    ctx.drawImage(d.img!, 0, 0, d.img!.width, d.img!.height, x, 0, d.w, d.h);
     x += d.w;
     if (options.spacing > 0) {
       ctx.fillStyle = options.spacingColor;
@@ -130,14 +130,14 @@ async function stitchOverlayVertical(scaled: Dims[], options: StitchOptions, wid
   const canvas = new OffscreenCanvas(width, totalHeight);
   const ctx = canvas.getContext('2d')!;
 
-  ctx.drawImage(first.img, 0, 0, first.img.width, first.img.height, 0, 0, first.w, first.h);
+  ctx.drawImage(first.img!, 0, 0, first.img!.width, first.img!.height, 0, 0, first.w, first.h);
 
   let y = first.h;
   for (let i = 1; i < scaled.length; i++) {
     const d = scaled[i];
     const sH = Math.min(stripH, d.h);
     const srcY = d.h - sH;
-    ctx.drawImage(d.img, 0, srcY, d.img.width, sH, 0, y, d.w, sH);
+    ctx.drawImage(d.img!, 0, srcY, d.img!.width, sH, 0, y, d.w, sH);
     y += sH;
   }
 
@@ -156,14 +156,14 @@ async function stitchOverlayHorizontal(scaled: Dims[], options: StitchOptions, h
   const canvas = new OffscreenCanvas(totalWidth, height);
   const ctx = canvas.getContext('2d')!;
 
-  ctx.drawImage(first.img, 0, 0, first.img.width, first.img.height, 0, 0, first.w, first.h);
+  ctx.drawImage(first.img!, 0, 0, first.img!.width, first.img!.height, 0, 0, first.w, first.h);
 
   let x = first.w;
   for (let i = 1; i < scaled.length; i++) {
     const d = scaled[i];
     const sW = Math.min(stripW, d.w);
     const srcX = d.w - sW;
-    ctx.drawImage(d.img, srcX, 0, sW, d.img.height, x, 0, sW, d.h);
+    ctx.drawImage(d.img!, srcX, 0, sW, d.img!.height, x, 0, sW, d.h);
     x += sW;
   }
 
