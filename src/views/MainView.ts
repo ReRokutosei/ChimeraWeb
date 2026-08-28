@@ -338,6 +338,19 @@ function renderCutParams(): HTMLElement {
   const row = document.createElement('div');
   row.className = 'param-row';
   row.appendChild(createLabel(t('cut_preset_label')));
+
+  const hint = document.createElement('div');
+  hint.className = 'param-hint';
+  hint.style.cssText = 'font-size: 12px; color: var(--text-secondary); margin-top: 8px; line-height: 1.4;';
+
+  const updateHint = (preset: typeof state.cutPreset) => {
+    hint.textContent = (preset === 'x3' || preset === 'x4')
+      ? t('cut_hint_x')
+      : t('cut_hint_grid');
+  };
+
+  updateHint(state.cutPreset);
+
   const gridCtrl = renderSegmentedControl(
     [
       { label: t('grid_2x2'), value: 'grid2' },
@@ -346,10 +359,14 @@ function renderCutParams(): HTMLElement {
       { label: t('preset_x4'), value: 'x4' }
     ],
     state.cutPreset,
-    val => { saveCutPreset(val as typeof state.cutPreset); }
+    val => {
+      saveCutPreset(val as typeof state.cutPreset);
+      updateHint(val as typeof state.cutPreset);
+    }
   );
   row.appendChild(gridCtrl);
   card.appendChild(row);
+  card.appendChild(hint);
 
   return card;
 }
