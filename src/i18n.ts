@@ -1,13 +1,19 @@
-function resolveLocale(): string {
-  const stored = localStorage.getItem('chimera_locale');
-  if (stored === 'en' || stored === 'zh') return stored;
-  return navigator.language.toLowerCase().startsWith('zh') ? 'zh' : 'en';
+export type Locale = 'zh' | 'en' | 'ja' | 'ko';
+
+function resolveLocale(): Locale {
+  const stored = localStorage.getItem('chimera_locale') as Locale | null;
+  if (stored === 'en' || stored === 'zh' || stored === 'ja' || stored === 'ko') return stored;
+  const nav = navigator.language.toLowerCase();
+  if (nav.startsWith('zh')) return 'zh';
+  if (nav.startsWith('ja')) return 'ja';
+  if (nav.startsWith('ko')) return 'ko';
+  return 'en';
 }
-const locale = resolveLocale();
+const locale: Locale = resolveLocale();
 
 type Messages = Record<string, string>;
 
-const messages: Record<string, Messages> = {
+const messages: Record<Locale, Messages> = {
   zh: {
     stitch: '拼接',
     cut: '切割',
@@ -55,14 +61,19 @@ const messages: Record<string, Messages> = {
     save_current_title: '保存「{name}」的所有子图',
     click_download: '点击任意单元格即可单独下载',
     toggle_theme: '切换主题',
+    change_lang: '切换语言',
     lang_zh: '中文',
     lang_en: 'English',
+    lang_ja: '日本語',
+    lang_ko: '한국어',
     github: 'GitHub 仓库',
     export_settings: '导出设置',
     default_dir: '默认保存目录',
     select_dir: '选择',
     always_prompt: '始终询问保存位置',
     saved_to: '已保存至 {path}',
+    seamless_preview: 'X 连拼效果预览',
+    download_zip: '下载 ZIP 压缩包',
   },
   en: {
     stitch: 'Stitch',
@@ -111,19 +122,146 @@ const messages: Record<string, Messages> = {
     save_current_title: 'Save sub-images from 「{name}」',
     click_download: 'Click any cell to download',
     toggle_theme: 'Toggle theme',
+    change_lang: 'Change language',
     lang_zh: '中文',
     lang_en: 'English',
+    lang_ja: '日本語',
+    lang_ko: '한국어',
     github: 'GitHub repository',
     export_settings: 'Export Settings',
     default_dir: 'Default Directory',
     select_dir: 'Select',
     always_prompt: 'Always ask where to save',
     saved_to: 'Saved to {path}',
+    seamless_preview: 'X Timeline Preview',
+    download_zip: 'Download ZIP',
+  },
+  ja: {
+    stitch: '結合',
+    cut: '分割',
+    grid_2x2: '2×2',
+    grid_3x3: '3×3',
+    preset_x3: 'X 3分割',
+    preset_x4: 'X 4分割',
+    grid_label: 'グリッド',
+    cut_preset_label: '分割モード',
+    direction: '連結方向',
+    vertical: '縦方向',
+    horizontal: '横方向',
+    width_scale: 'サイズ調整',
+    min_width: '最小幅に揃える',
+    no_scale: 'そのまま',
+    max_width: '最大幅に揃える',
+    min_height: '最小高に揃える',
+    max_height: '最大高に揃える',
+    overlay: 'オーバーラップ',
+    overlay_disabled: '無効',
+    overlay_enabled: '有効',
+    overlay_ratio: '重複割合(%)',
+    spacing: '間隔/余白',
+    fill_color: '余白の背景色',
+    output_format: '出力形式',
+    output_quality: '画質',
+    clear: '画像をクリア',
+    start_stitch: '画像を結合',
+    start_cut: '画像を分割',
+    drop_hint: 'ここに画像をドラッグ＆ドロップ',
+    drop_hint_small: 'またはクリックして選択',
+    tap_to_add: 'タップして画像を追加',
+    cut_max: '分割モードでは最大10枚まで対応しています',
+    cut_max_auto: '最大 {n} 枚まで対応しています。先頭の {n} 枚を保持しました',
+    fail: '処理に失敗しました',
+    load_fail: '読み込みに失敗しました',
+    result_title: 'プレビュー',
+    back: '戻る',
+    save_as: '{fmt} として保存',
+    prev: '← 前の画像',
+    next: '次の画像 →',
+    save_all: 'すべての分割画像を保存',
+    save_all_title: '{n} 枚すべての分割画像を保存',
+    save_current: 'この画像を保存',
+    save_current_title: '「{name}」の分割画像を保存',
+    click_download: '各画像をクリックして個別にダウンロードできます',
+    toggle_theme: 'テーマ切り替え',
+    change_lang: '言語切り替え',
+    lang_zh: '中文',
+    lang_en: 'English',
+    lang_ja: '日本語',
+    lang_ko: '한국어',
+    github: 'GitHub リポジトリ',
+    export_settings: '出力設定',
+    default_dir: 'デフォルト保存先',
+    select_dir: '選択',
+    always_prompt: '毎回保存先を確認する',
+    saved_to: '{path} に保存しました',
+    seamless_preview: 'X タイムライン表示プレビュー',
+    download_zip: 'ZIPでまとめて保存',
+  },
+  ko: {
+    stitch: '이어붙이기',
+    cut: '분할하기',
+    grid_2x2: '2×2',
+    grid_3x3: '3×3',
+    preset_x3: 'X 3분할',
+    preset_x4: 'X 4분할',
+    grid_label: '그리드',
+    cut_preset_label: '분할 모드',
+    direction: '방향',
+    vertical: '세로',
+    horizontal: '가로',
+    width_scale: '크기 맞춤',
+    min_width: '최소 너비',
+    no_scale: '원본 크기',
+    max_width: '최대 너비',
+    min_height: '최소 높이',
+    max_height: '최대 높이',
+    overlay: '오버레이',
+    overlay_disabled: '끄기',
+    overlay_enabled: '켜기',
+    overlay_ratio: '겹침 비율(%)',
+    spacing: '간격',
+    fill_color: '간격 색상',
+    output_format: '출력 형식',
+    output_quality: '품질',
+    clear: '초기화',
+    start_stitch: '이어붙이기 시작',
+    start_cut: '분할 시작',
+    drop_hint: '여기에 이미지를 드래그 앤 드롭하세요',
+    drop_hint_small: '또는 클릭하여 파일 선택',
+    tap_to_add: '탭하여 이미지 추가',
+    cut_max: '분할 모드는 최대 10장까지 지원합니다',
+    cut_max_auto: '최대 {n}장까지 추가할 수 있어 앞의 {n}장만 유지되었습니다',
+    fail: '처리 실패',
+    load_fail: '불러오기 실패',
+    result_title: '결과 미리보기',
+    back: '뒤로',
+    save_as: '{fmt} 형식으로 저장',
+    prev: '← 이전',
+    next: '다음 →',
+    save_all: '모든 분할 이미지 저장',
+    save_all_title: '전체 {n}장 이미지의 분할본 모두 저장',
+    save_current: '현재 이미지 저장',
+    save_current_title: '「{name}」 분할 이미지 저장',
+    click_download: '각 셀을 클릭하여 개별 다운로드할 수 있습니다',
+    toggle_theme: '테마 변경',
+    change_lang: '언어 변경',
+    lang_zh: '中文',
+    lang_en: 'English',
+    lang_ja: '日本語',
+    lang_ko: '한국어',
+    github: 'GitHub 저장소',
+    export_settings: '내보내기 설정',
+    default_dir: '기본 저장 경로',
+    select_dir: '선택',
+    always_prompt: '항상 저장 위치 묻기',
+    saved_to: '{path} 에 저장되었습니다',
+    seamless_preview: 'X 타임라인 미리보기',
+    download_zip: 'ZIP으로 일괄 저장',
   },
 };
 
 export function t(key: string, params?: Record<string, string | number>): string {
-  const msg = messages[locale]?.[key];
+  const msg = messages[locale]?.[key] ?? messages.en?.[key];
   if (msg === undefined) return key;
   if (!params) return msg;
   let result = msg;
@@ -133,12 +271,18 @@ export function t(key: string, params?: Record<string, string | number>): string
   return result;
 }
 
-export function getLocale(): string {
+export function getLocale(): Locale {
   return locale;
 }
 
-export function toggleLocale(): void {
-  const next = locale === 'zh' ? 'en' : 'zh';
+export function setLocale(next: Locale): void {
   localStorage.setItem('chimera_locale', next);
   location.reload();
 }
+
+export function toggleLocale(): void {
+  const list: Locale[] = ['zh', 'en', 'ja', 'ko'];
+  const next = list[(list.indexOf(locale) + 1) % list.length];
+  setLocale(next);
+}
+

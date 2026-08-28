@@ -13,7 +13,7 @@ import { renderColorPicker } from '../components/ColorPicker';
 import { renderSegmentedControl } from '../components/SegmentedBtn';
 import { stitchImages } from '../engine/stitch';
 import { splitGrid } from '../engine/split';
-import { t, toggleLocale } from '../i18n';
+import { t, getLocale, setLocale, type Locale } from '../i18n';
 import { isDesktop } from '../env';
 
 const CIRCLE_COLORS = ['#FF6496', '#FABE00', '#E60046', '#006EBE'];
@@ -40,13 +40,46 @@ function renderTopBar(): HTMLElement {
   const actions = document.createElement('div');
   actions.className = 'actions';
 
-  // Language toggle
+  // Language selector with popover
+  const langContainer = document.createElement('div');
+  langContainer.className = 'lang-container';
+
   const langBtn = document.createElement('button');
   langBtn.className = 'icon-btn';
   langBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size:20px">translate</span>';
-  langBtn.title = t('lang_' + (localStorage.getItem('chimera_locale') === 'en' ? 'zh' : 'en'));
-  langBtn.addEventListener('click', toggleLocale);
-  actions.appendChild(langBtn);
+  langBtn.title = t('change_lang');
+
+  const langPopover = document.createElement('div');
+  langPopover.className = 'lang-popover hidden';
+  const curLocale = getLocale();
+  const langOptions: { code: Locale; name: string }[] = [
+    { code: 'zh', name: '中文' },
+    { code: 'en', name: 'English' },
+    { code: 'ja', name: '日本語' },
+    { code: 'ko', name: '한국어' }
+  ];
+
+  langOptions.forEach(opt => {
+    const optBtn = document.createElement('button');
+    optBtn.className = 'lang-option' + (opt.code === curLocale ? ' active' : '');
+    optBtn.textContent = opt.name;
+    optBtn.addEventListener('click', () => {
+      setLocale(opt.code);
+    });
+    langPopover.appendChild(optBtn);
+  });
+
+  langBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    langPopover.classList.toggle('hidden');
+    popover.classList.add('hidden');
+  });
+
+  document.addEventListener('click', () => langPopover.classList.add('hidden'));
+
+  langContainer.appendChild(langBtn);
+  langContainer.appendChild(langPopover);
+  actions.appendChild(langContainer);
 
   // Theme toggle with popover
   const themeContainer = document.createElement('div');

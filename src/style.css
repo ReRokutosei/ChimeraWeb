@@ -801,3 +801,121 @@ input[type="number"]:focus {
   background: var(--bg-tertiary);
   color: var(--primary);
 }
+
+/* ─── Lang Popover ─── */
+
+.lang-container {
+  position: relative;
+}
+
+.lang-popover {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 4px 16px var(--shadow);
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 110px;
+  z-index: 50;
+  opacity: 0;
+  transform: scale(0.92);
+  transform-origin: top right;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  pointer-events: none;
+}
+
+.lang-popover:not(.hidden) {
+  opacity: 1;
+  transform: scale(1);
+  pointer-events: auto;
+}
+
+.lang-popover .lang-option {
+  padding: 6px 12px;
+  font-size: 13px;
+  text-align: left;
+  border-radius: 6px;
+  color: var(--text-secondary);
+  transition: background var(--transition), color var(--transition);
+  cursor: pointer;
+  background: none;
+  border: none;
+  white-space: nowrap;
+}
+
+.lang-popover .lang-option:hover {
+  background: var(--bg-secondary);
+  color: var(--text);
+}
+
+.lang-popover .lang-option.active {
+  background: var(--bg-tertiary);
+  color: var(--primary);
+  font-weight: 600;
+}
+
+/* ─── Seamless Ribbon Preview ─── */
+
+.seamless-ribbon-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.seamless-ribbon-header {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.seamless-ribbon-track {
+  display: flex;
+  gap: 2px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  max-width: 100%;
+}
+
+.seamless-ribbon-cell {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  background: var(--bg);
+}
+
+.seamless-ribbon-cell img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.seamless-ribbon-badge {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  background: rgba(0, 0, 0, 0.75);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: monospace;
+  padding: 2px 6px;
+  border-radius: 4px;
+  line-height: 1.2;
+  pointer-events: none;
+}
+
