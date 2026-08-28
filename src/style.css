@@ -525,6 +525,18 @@ input[type="number"]:focus {
   grid-template-columns: repeat(2, 1fr);
 }
 
+.split-grid-1x3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.split-grid-1x4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.split-grid .cell {
+  position: relative;
+}
+
 .split-grid .cell img {
   width: 100%;
   height: auto;

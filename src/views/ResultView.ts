@@ -1,8 +1,9 @@
-import { state } from '../state';
+import { state, type CutPreset, type SplitImageResult } from '../state';
 import { t } from '../i18n';
 import { save, open as openDialog } from '@tauri-apps/plugin-dialog';
 import { invoke } from '@tauri-apps/api/core';
 import { isDesktop } from '../env';
+import JSZip from 'jszip';
 
 function downloadBlob(blob: Blob, filename: string): void {
   const url = URL.createObjectURL(blob);
@@ -11,6 +12,27 @@ function downloadBlob(blob: Blob, filename: string): void {
   a.download = filename;
   a.click();
   URL.revokeObjectURL(url);
+}
+
+function getCellFilename(imageName: string, preset: CutPreset, index: number): string {
+  const baseName = imageName.replace(/\.[^.]+$/, '');
+  const numStr = String(index + 1).padStart(2, '0');
+  if (preset === 'x3' || preset === 'x4') {
+    return `${baseName}_X_${numStr}.png`;
+  }
+  return `${baseName}_grid_${numStr}.png`;
+}
+
+async function downloadZip(results: SplitImageResult[], zipName: string): Promise<void> {
+  const zip = new JSZip();
+  for (const r of results) {
+    for (const cell of r.cells) {
+      const fileName = getCellFilename(r.imageName, r.preset, cell.index);
+      zip.file(fileName, cell.blob);
+    }
+  }
+  const zipBlob = await zip.generateAsync({ type: 'blob' });
+  downloadBlob(zipBlob, zipName);
 }
 
 async function saveBlobNative(blob: Blob, defaultFilename: string): Promise<void> {
@@ -124,6 +146,39 @@ function renderSplitResultUI(container: HTMLElement): void {
   header.textContent = isMulti ? `${current.imageName}  (${idx + 1}/${total})` : current.imageName;
   container.appendChild(header);
 
+  // Seamless ribbon preview for X 3/4 presets
+  if (current.preset === 'x3' || current.preset === 'x4') {
+    const ribbonCard = document.createElement('div');
+    ribbonCard.className = 'seamless-ribbon-card';
+
+    const ribbonHeader = document.createElement('div');
+    ribbonHeader.className = 'seamless-ribbon-header';
+    ribbonHeader.innerHTML = `<span class="material-symbols-outlined" style="font-size:16px">view_carousel</span> ${t('seamless_preview')}`;
+    ribbonCard.appendChild(ribbonHeader);
+
+    const ribbonTrack = document.createElement('div');
+    ribbonTrack.className = 'seamless-ribbon-track';
+
+    for (const cell of current.cells) {
+      const cellWrap = document.createElement('div');
+      cellWrap.className = 'seamless-ribbon-cell';
+      
+      const img = document.createElement('img');
+      img.src = URL.createObjectURL(cell.blob);
+      
+      const badge = document.createElement('span');
+      badge.className = 'seamless-ribbon-badge';
+      badge.textContent = String(cell.index + 1).padStart(2, '0');
+      
+      cellWrap.appendChild(img);
+      cellWrap.appendChild(badge);
+      ribbonTrack.appendChild(cellWrap);
+    }
+
+    ribbonCard.appendChild(ribbonTrack);
+    container.appendChild(ribbonCard);
+  }
+
   // Prev / Next navigation (hidden when only 1 image)
   if (isMulti) {
     const navRow = document.createElement('div');
@@ -160,7 +215,18 @@ function renderSplitResultUI(container: HTMLElement): void {
 
   // Save buttons
   const saveRow = document.createElement('div');
-  saveRow.style.cssText = 'display:flex;gap:12px;margin-bottom:10px;';
+  saveRow.style.cssText = 'display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap;justify-content:center;';
+
+  const baseName = current.imageName.replace(/\.[^.]+$/, '');
+
+  // ZIP Download button
+  const zipBtn = document.createElement('button');
+  zipBtn.className = 'download-btn';
+  zipBtn.textContent = t('download_zip');
+  zipBtn.addEventListener('click', async () => {
+    await downloadZip([current], `${baseName}_split.zip`);
+  });
+  saveRow.appendChild(zipBtn);
 
   if (isMulti) {
     const saveAllBtn = document.createElement('button');
@@ -169,12 +235,7 @@ function renderSplitResultUI(container: HTMLElement): void {
     saveAllBtn.title = t('save_all_title', { n: total });
     saveAllBtn.addEventListener('click', async () => {
       if (!isDesktop()) {
-        for (const r of results) {
-          const baseName = r.imageName.replace(/\.[^.]+$/, '');
-          for (const cell of r.cells) {
-            downloadBlob(cell.blob, `${baseName}_cell_${cell.index + 1}.png`);
-          }
-        }
+        await downloadZip(results, `chimera_all_split.zip`);
         return;
       }
 
@@ -191,10 +252,9 @@ function renderSplitResultUI(container: HTMLElement): void {
 
       try {
         for (const r of results) {
-          const baseName = r.imageName.replace(/\.[^.]+$/, '');
           for (const cell of r.cells) {
             const arr = new Uint8Array(await cell.blob.arrayBuffer());
-            const fileName = `${baseName}_cell_${cell.index + 1}.png`;
+            const fileName = getCellFilename(r.imageName, r.preset, cell.index);
             const sep = targetDir.includes('\\') ? '\\' : '/';
             const fullPath = targetDir.endsWith(sep) ? `${targetDir}${fileName}` : `${targetDir}${sep}${fileName}`;
             await invoke('save_file_bypass', { path: fullPath, data: Array.from(arr) });
@@ -215,9 +275,9 @@ function renderSplitResultUI(container: HTMLElement): void {
   saveCurrentBtn.title = t('save_current_title', { name: current.imageName });
   saveCurrentBtn.addEventListener('click', async () => {
     if (!isDesktop()) {
-      const baseName = current.imageName.replace(/\.[^.]+$/, '');
       for (const cell of current.cells) {
-        downloadBlob(cell.blob, `${baseName}_cell_${cell.index + 1}.png`);
+        const fileName = getCellFilename(current.imageName, current.preset, cell.index);
+        downloadBlob(cell.blob, fileName);
       }
       return;
     }
@@ -234,10 +294,9 @@ function renderSplitResultUI(container: HTMLElement): void {
     }
 
     try {
-      const baseName = current.imageName.replace(/\.[^.]+$/, '');
       for (const cell of current.cells) {
         const arr = new Uint8Array(await cell.blob.arrayBuffer());
-        const fileName = `${baseName}_cell_${cell.index + 1}.png`;
+        const fileName = getCellFilename(current.imageName, current.preset, cell.index);
         const sep = targetDir.includes('\\') ? '\\' : '/';
         const fullPath = targetDir.endsWith(sep) ? `${targetDir}${fileName}` : `${targetDir}${sep}${fileName}`;
         await invoke('save_file_bypass', { path: fullPath, data: Array.from(arr) });
@@ -258,7 +317,15 @@ function renderSplitResultUI(container: HTMLElement): void {
 
   const grid = document.createElement('div');
   grid.className = 'split-grid';
-  grid.classList.add(state.cutGrid === 3 ? 'split-grid-3' : 'split-grid-2');
+  if (current.preset === 'x3') {
+    grid.classList.add('split-grid-1x3');
+  } else if (current.preset === 'x4') {
+    grid.classList.add('split-grid-1x4');
+  } else if (current.preset === 'grid2') {
+    grid.classList.add('split-grid-2');
+  } else {
+    grid.classList.add('split-grid-3');
+  }
 
   for (const cell of current.cells) {
     const cellDiv = document.createElement('div');
@@ -268,12 +335,19 @@ function renderSplitResultUI(container: HTMLElement): void {
     cImg.src = url;
     cImg.alt = `cell_${cell.index}`;
     cImg.addEventListener('click', () => {
-      const baseName = current.imageName.replace(/\.[^.]+$/, '');
-      saveBlobNative(cell.blob, `${baseName}_cell_${cell.index + 1}.png`);
+      const fileName = getCellFilename(current.imageName, current.preset, cell.index);
+      saveBlobNative(cell.blob, fileName);
     });
-    cImg.title = '点击下载';
+    cImg.title = `${t('click_download')} (${String(cell.index + 1).padStart(2, '0')})`;
+    
+    const badge = document.createElement('span');
+    badge.className = 'seamless-ribbon-badge';
+    badge.textContent = String(cell.index + 1).padStart(2, '0');
+
     cellDiv.appendChild(cImg);
+    cellDiv.appendChild(badge);
     grid.appendChild(cellDiv);
   }
   container.appendChild(grid);
 }
+
