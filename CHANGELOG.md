@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.0.5](https://github.com/ReRokutosei/ChimeraWeb/compare/v1.0.4...v1.0.5) (2026-08-29)
+
+
+### Features
+
+* **i18n:** add Japanese and Korean language support with popover switcher ([047ae26](https://github.com/ReRokutosei/ChimeraWeb/commit/047ae2676971a613a2b298a36cc7488f78c5d120))
+* **result:** add seamless timeline ribbon preview, sequential naming and ZIP batch export ([5decb53](https://github.com/ReRokutosei/ChimeraWeb/commit/5decb534d2766f0b8dfc58d6fe54d64a113706ba))
+* **split:** support seamless X 3/4 split presets and remainder distribution ([2a53c63](https://github.com/ReRokutosei/ChimeraWeb/commit/2a53c63b8a740870f2e36a99c8469fbc9c45efce))
+
+
+### Bug Fixes
+
+* **stitch:** resolve ImageBitmap reference in getScaledDimensions ([bb2f887](https://github.com/ReRokutosei/ChimeraWeb/commit/bb2f8873b59a28e5cf476f6850dc03c41260c04b))
+
 ### [1.0.4](https://github.com/ReRokutosei/ChimeraWeb/compare/v1.0.3...v1.0.4) (2026-08-15)
 
 
