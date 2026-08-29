@@ -1,12 +1,15 @@
 # Chimera Web
 
 <div align="center">
-<img src="images/chimera.svg" alt="logo" width="75">
-</div>
+<img src="images/chimera.svg" alt="logo" width="150">
+
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FReRokutosei%2FChimeraWeb.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FReRokutosei%2FChimeraWeb?ref=badge_shield)
 
 **[English](README.md) | 中文 | [日本語](README_JA.md) | [한국어](README_KO.md)**
 
 轻量级桌面图片拼接与切割工具，所有处理均在本地完成
+
+</div>
 
 > [!TIP]
 >

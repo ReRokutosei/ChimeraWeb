@@ -1,14 +1,15 @@
 # Chimera Web
 
 <div align="center">
-<img src="images/chimera.svg" alt="logo" width="75">
-</div>
+<img src="images/chimera.svg" alt="logo" width="150">
 
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FReRokutosei%2FChimeraWeb.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FReRokutosei%2FChimeraWeb?ref=badge_shield)
 
 **English | [中文](README_CN.md) | [日本語](README_JA.md) | [한국어](README_KO.md)**
 
 A lightweight desktop image stitching and cutting tool, all processing stays local.
+
+</div>
 
 > [!TIP]
 > 
