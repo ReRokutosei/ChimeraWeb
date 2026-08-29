@@ -1,5 +1,9 @@
 # Chimera Web
 
+<div align="center">
+<img src="images/chimera.svg" alt="logo" width="75">
+</div>
+
 **[English](README.md) | [中文](README_CN.md) | [日本語](README_JA.md) | 한국어**
 
 모든 처리가 로컬 기기에서 안전하게 완료되는 가볍고 빠른 데스크톱 이미지 병합 및 분할 도구.
@@ -21,6 +25,14 @@
 - **다크 모드**: 라이트/다크 테마 원클릭 전환
 - **다국어 지원**: 한국어, 영어, 중국어, 일본어 인터페이스 지원
 - **개인정보 보호**: 완전한 오프라인 클라이언트 사이드 처리, 텔레메트리 미수집
+
+## 미리보기
+
+<div align="center">
+  <img src="./images/stitch_ko.webp" alt="병합" width="80%">
+  <br>
+  <img src="./images/cut_ko.webp" alt="분할" width="80%">
+</div>
 
 ## 기술 스택
 
@@ -57,10 +69,6 @@ npm run build      # → dist/
 ```bash
 npm run tauri build  # → src-tauri/target/release/bundle/nsis/
 ```
-
-## 스크린샷
-
-![](./20260429205356.webp)
 
 ## 법적 고지 및 개인정보 보호
 

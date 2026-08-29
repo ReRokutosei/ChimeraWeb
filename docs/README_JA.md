@@ -1,5 +1,9 @@
 # Chimera Web
 
+<div align="center">
+<img src="images/chimera.svg" alt="logo" width="75">
+</div>
+
 **[English](README.md) | [中文](README_CN.md) | 日本語 | [한국어](README_KO.md)**
 
 完全ローカル処理で動作する、軽量なデスクトップ向け画像結合・分割ツール。
@@ -21,6 +25,14 @@
 - **ダークモード**：ライト／ダークテーマの切り替えに対応
 - **多言語対応**：中国語、英語、日本語、韓国語をサポート
 - **プライバシー**：完全オフライン・クライアントサイド処理、テレメトリ収集なし
+
+## プレビュー
+
+<div align="center">
+  <img src="./images/stitch_ja.webp" alt="結合" width="80%">
+  <br>
+  <img src="./images/cut_ja.webp" alt="分割" width="80%">
+</div>
 
 ## 技術スタック
 
@@ -57,10 +69,6 @@ npm run build      # → dist/
 ```bash
 npm run tauri build  # → src-tauri/target/release/bundle/nsis/
 ```
-
-## スクリーンショット
-
-![](./20260429205356.webp)
 
 ## 法的情報とプライバシー
 

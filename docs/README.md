@@ -1,6 +1,10 @@
 # Chimera Web
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FReRokutosei%2FChimeraWeb.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FReRokutosei%2FChimeraWeb?ref=badge_shield)
 
+<div align="center">
+<img src="images/chimera.svg" alt="logo" width="75">
+</div>
+
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FReRokutosei%2FChimeraWeb.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FReRokutosei%2FChimeraWeb?ref=badge_shield)
 
 **English | [中文](README_CN.md) | [日本語](README_JA.md) | [한국어](README_KO.md)**
 
@@ -23,6 +27,14 @@ A lightweight desktop image stitching and cutting tool, all processing stays loc
 - **Dark mode**: Built-in light/dark theme toggle.
 - **i18n**: English, Chinese, Japanese, and Korean interface.
 - **Privacy**: Fully client-side processing, no telemetry.
+
+## Preview
+
+<div align="center">
+  <img src="./images/stitch_en.webp" alt="Stitch" width="80%">
+  <br>
+  <img src="./images/cut_en.webp" alt="Cut" width="80%">
+</div>
 
 ## Tech Stack
 
@@ -59,10 +71,6 @@ npm run build      # → dist/
 ```bash
 npm run tauri build  # → src-tauri/target/release/bundle/nsis/
 ```
-
-## Screenshots
-
-![](./20260429205706.webp)
 
 ## Legal & Privacy
 

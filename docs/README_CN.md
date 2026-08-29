@@ -1,5 +1,9 @@
 # Chimera Web
 
+<div align="center">
+<img src="images/chimera.svg" alt="logo" width="75">
+</div>
+
 **[English](README.md) | 中文 | [日本語](README_JA.md) | [한국어](README_KO.md)**
 
 轻量级桌面图片拼接与切割工具，所有处理均在本地完成
@@ -21,6 +25,14 @@
 - **深色模式**：内置亮色/暗色主题切换
 - **多语言**：支持简体中文、英文、日文和韩文
 - **隐私**：完全离线客户端处理，无遥测
+
+## 预览
+
+<div align="center">
+  <img src="./images/stitch_cn.webp" alt="拼接" width="80%">
+  <br>
+  <img src="./images/cut_cn.webp" alt="切割" width="80%">
+</div>
 
 ## 技术栈
 
@@ -57,10 +69,6 @@ npm run build      # → dist/
 ```bash
 npm run tauri build  # → src-tauri/target/release/bundle/nsis/
 ```
-
-## 截图
-
-![](./20260429205356.webp)
 
 ## 法律与隐私
 
