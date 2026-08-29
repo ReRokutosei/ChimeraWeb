@@ -50,5 +50,22 @@ describe('stitch engine', () => {
       expect(scaled[2].h).toBe(400);
       expect(scaled[2].w).toBe(Math.round(1200 * (400 / 600))); // 800
     });
+
+    it('handles ImageBitmap objects correctly retaining img reference', () => {
+      const mockBitmap1 = { width: 1000, height: 500, close: () => {} } as unknown as ImageBitmap;
+      const mockBitmap2 = { width: 800, height: 400, close: () => {} } as unknown as ImageBitmap;
+      const scaled = getScaledDimensions([mockBitmap1, mockBitmap2], 'VERTICAL', 'MIN_WIDTH');
+      expect(scaled[0].img).toBe(mockBitmap1);
+      expect(scaled[0].w).toBe(800);
+      expect(scaled[1].img).toBe(mockBitmap2);
+      expect(scaled[1].w).toBe(800);
+    });
+
+    it('handles object with explicit img field', () => {
+      const mockBmp = { width: 1000, height: 500 } as ImageBitmap;
+      const item = { width: 1000, height: 500, img: mockBmp };
+      const scaled = getScaledDimensions([item], 'VERTICAL', 'NONE');
+      expect(scaled[0].img).toBe(mockBmp);
+    });
   });
 });

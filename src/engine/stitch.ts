@@ -16,12 +16,30 @@ export interface StitchResult {
 type ImgSrc = ImageBitmap;
 export type Dims = { img?: ImgSrc; w: number; h: number };
 
-export function getScaledDimensions(images: { width: number; height: number; img?: ImgSrc }[], direction: string, scale: string): Dims[] {
-  const dims: Dims[] = images.map(img => ({
-    img: img.img,
-    w: img.width,
-    h: img.height
-  }));
+export function getScaledDimensions(
+  images: ({ width: number; height: number; img?: ImgSrc } | ImgSrc)[],
+  direction: string,
+  scale: string
+): Dims[] {
+  const dims: Dims[] = images.map(item => {
+    let img: ImgSrc | undefined;
+    if ('img' in item && item.img !== undefined) {
+      img = item.img;
+    } else if (typeof ImageBitmap !== 'undefined' && item instanceof ImageBitmap) {
+      img = item;
+    } else if (typeof (item as any)?.close === 'function') {
+      img = item as ImgSrc;
+    } else if ('img' in item) {
+      img = item.img;
+    } else {
+      img = undefined;
+    }
+    return {
+      img,
+      w: item.width,
+      h: item.height
+    };
+  });
 
   if (direction === 'VERTICAL') {
     const targetW = scale === 'MIN_WIDTH' ? Math.min(...dims.map(d => d.w))
@@ -136,8 +154,10 @@ async function stitchOverlayVertical(scaled: Dims[], options: StitchOptions, wid
   for (let i = 1; i < scaled.length; i++) {
     const d = scaled[i];
     const sH = Math.min(stripH, d.h);
-    const srcY = d.h - sH;
-    ctx.drawImage(d.img!, 0, srcY, d.img!.width, sH, 0, y, d.w, sH);
+    const scaleY = d.img!.height / d.h;
+    const srcY = Math.round((d.h - sH) * scaleY);
+    const srcH = Math.round(sH * scaleY);
+    ctx.drawImage(d.img!, 0, srcY, d.img!.width, srcH, 0, y, d.w, sH);
     y += sH;
   }
 
@@ -162,8 +182,10 @@ async function stitchOverlayHorizontal(scaled: Dims[], options: StitchOptions, h
   for (let i = 1; i < scaled.length; i++) {
     const d = scaled[i];
     const sW = Math.min(stripW, d.w);
-    const srcX = d.w - sW;
-    ctx.drawImage(d.img!, srcX, 0, sW, d.img!.height, x, 0, sW, d.h);
+    const scaleX = d.img!.width / d.w;
+    const srcX = Math.round((d.w - sW) * scaleX);
+    const srcW = Math.round(sW * scaleX);
+    ctx.drawImage(d.img!, srcX, 0, srcW, d.img!.height, x, 0, sW, d.h);
     x += sW;
   }
 
