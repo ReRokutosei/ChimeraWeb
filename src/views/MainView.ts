@@ -15,6 +15,7 @@ import { stitchImages } from '../engine/stitch';
 import { splitGrid } from '../engine/split';
 import { t, getLocale, setLocale, type Locale } from '../i18n';
 import { isDesktop } from '../env';
+import { getEncodingOptions } from '../output';
 
 const CIRCLE_COLORS = ['#FF6496', '#FABE00', '#E60046', '#006EBE'];
 
@@ -620,10 +621,16 @@ export function renderMainView(container: HTMLElement): void {
           for (const info of state.images) {
             const blob = await (await fetch(info.src)).blob();
             const bitmap = await createImageBitmap(blob);
-            const { rows, cols, cells } = await splitGrid(bitmap, state.cutPreset);
+            const { rows, cols, cells } = await splitGrid(
+              bitmap,
+              state.cutPreset,
+              state.outputFormat,
+              state.outputQuality
+            );
             results.push({
               imageName: info.name,
               preset: state.cutPreset,
+              format: state.outputFormat,
               rows,
               cols,
               cells
@@ -649,12 +656,9 @@ export function renderMainView(container: HTMLElement): void {
             widthScale: state.widthScale
           });
 
-          const mime = state.outputFormat === 'png' ? 'image/png' : state.outputFormat === 'webp' ? 'image/webp' : 'image/jpeg';
-          const hasQuality = state.outputFormat === 'jpeg' || state.outputFormat === 'webp';
-          const blob = await result.canvas.convertToBlob({
-            type: mime,
-            quality: hasQuality ? state.outputQuality / 100 : undefined
-          });
+          const blob = await result.canvas.convertToBlob(
+            getEncodingOptions(state.outputFormat, state.outputQuality)
+          );
 
           state.resultType = 'stitch';
           state.resultBlob = blob;

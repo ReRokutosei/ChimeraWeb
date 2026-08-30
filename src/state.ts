@@ -7,6 +7,7 @@ export interface ImageInfo {
 }
 
 export type CutPreset = 'grid2' | 'grid3' | 'x3' | 'x4';
+export type OutputFormat = 'png' | 'jpeg' | 'webp';
 
 export interface SplitCell {
   blob: Blob;
@@ -16,6 +17,7 @@ export interface SplitCell {
 export interface SplitImageResult {
   imageName: string;
   preset: CutPreset;
+  format: OutputFormat;
   rows: number;
   cols: number;
   cells: SplitCell[];
@@ -35,7 +37,7 @@ class AppState {
 
   resultType: 'stitch' | 'split' | null = null;
   resultBlob: Blob | null = null;
-  resultFormat: 'png' | 'jpeg' | 'webp' = 'png';
+  resultFormat: OutputFormat = 'png';
 
   splitResults: SplitImageResult[] | null = null;
   currentSplitImageIndex = 0;
@@ -46,7 +48,7 @@ class AppState {
   widthScale: 'NONE' | 'MIN_WIDTH' | 'MAX_WIDTH' = 'MIN_WIDTH';
   imageSpacing = 0;
   spacingColor = '#000000';
-  outputFormat: 'png' | 'jpeg' | 'webp' = 'png';
+  outputFormat: OutputFormat = 'png';
   outputQuality = 90;
   defaultSaveDir = '';
   alwaysPromptSave = true;

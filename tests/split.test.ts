@@ -1,5 +1,10 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { computeSegments, getPresetDimensions } from '../src/engine/split';
+import { getCellFilename, getEncodingOptions } from '../src/output';
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
 
 describe('split engine', () => {
   describe('getPresetDimensions', () => {
@@ -66,6 +71,25 @@ describe('split engine', () => {
         expect(last.start + last.size).toBe(total);
         expect(segs.reduce((sum, s) => sum + s.size, 0)).toBe(total);
       }
+    });
+  });
+
+  describe('output contract', () => {
+    it('maps formats to encoding options', () => {
+      expect(getEncodingOptions('png', 42)).toEqual({ type: 'image/png' });
+      expect(getEncodingOptions('jpeg', 80)).toEqual({ type: 'image/jpeg', quality: 0.8 });
+      expect(getEncodingOptions('webp', 75)).toEqual({ type: 'image/webp', quality: 0.75 });
+    });
+
+    it('uses the actual format and an optional source ordinal in filenames', () => {
+      expect(getCellFilename('photo.jpg', 'grid3', 0, 'jpeg')).toBe('photo_grid_01.jpg');
+      expect(getCellFilename('photo.jpg', 'x4', 2, 'webp', 1)).toBe('photo_02_X_03.webp');
+    });
+
+    it('keeps same-named sources unique in a batch', () => {
+      const first = getCellFilename('photo.jpg', 'grid2', 0, 'png', 0);
+      const second = getCellFilename('photo.jpg', 'grid2', 0, 'png', 1);
+      expect(first).not.toBe(second);
     });
   });
 });

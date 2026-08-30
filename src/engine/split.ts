@@ -1,4 +1,5 @@
-import type { SplitCell, CutPreset } from '../state';
+import type { SplitCell, CutPreset, OutputFormat } from '../state';
+import { getEncodingOptions } from '../output';
 
 export function computeSegments(total: number, n: number): { start: number; size: number }[] {
   const base = Math.floor(total / n);
@@ -25,7 +26,9 @@ export function getPresetDimensions(preset: CutPreset): { rows: number; cols: nu
 
 export async function splitGrid(
   image: ImageBitmap,
-  preset: CutPreset
+  preset: CutPreset,
+  format: OutputFormat,
+  quality: number
 ): Promise<{ rows: number; cols: number; cells: SplitCell[] }> {
   const { rows, cols } = getPresetDimensions(preset);
   const colSegs = computeSegments(image.width, cols);
@@ -38,7 +41,7 @@ export async function splitGrid(
       const canvas = new OffscreenCanvas(cs.size, rs.size);
       const ctx = canvas.getContext('2d')!;
       ctx.drawImage(image, cs.start, rs.start, cs.size, rs.size, 0, 0, cs.size, rs.size);
-      const blob = await canvas.convertToBlob({ type: 'image/png' });
+      const blob = await canvas.convertToBlob(getEncodingOptions(format, quality));
       cells.push({ blob, index });
       index++;
     }
@@ -46,4 +49,3 @@ export async function splitGrid(
 
   return { rows, cols, cells };
 }
-

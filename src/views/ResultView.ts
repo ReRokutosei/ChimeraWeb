@@ -1,9 +1,10 @@
-import { state, type CutPreset, type SplitImageResult } from '../state';
+import { state, type SplitImageResult } from '../state';
 import { t } from '../i18n';
 import { save, open as openDialog } from '@tauri-apps/plugin-dialog';
 import { invoke } from '@tauri-apps/api/core';
 import { isDesktop } from '../env';
 import JSZip from 'jszip';
+import { getCellFilename, getFormatDetails } from '../output';
 
 function downloadBlob(blob: Blob, filename: string): void {
   const url = URL.createObjectURL(blob);
@@ -14,20 +15,18 @@ function downloadBlob(blob: Blob, filename: string): void {
   URL.revokeObjectURL(url);
 }
 
-function getCellFilename(imageName: string, preset: CutPreset, index: number): string {
-  const baseName = imageName.replace(/\.[^.]+$/, '');
-  const numStr = String(index + 1).padStart(2, '0');
-  if (preset === 'x3' || preset === 'x4') {
-    return `${baseName}_X_${numStr}.png`;
-  }
-  return `${baseName}_grid_${numStr}.png`;
-}
-
 async function downloadZip(results: SplitImageResult[], zipName: string): Promise<void> {
   const zip = new JSZip();
-  for (const r of results) {
+  const includeImageOrdinal = results.length > 1;
+  for (const [imageIndex, r] of results.entries()) {
     for (const cell of r.cells) {
-      const fileName = getCellFilename(r.imageName, r.preset, cell.index);
+      const fileName = getCellFilename(
+        r.imageName,
+        r.preset,
+        cell.index,
+        r.format,
+        includeImageOrdinal ? imageIndex : undefined
+      );
       zip.file(fileName, cell.blob);
     }
   }
@@ -120,8 +119,7 @@ function renderStitchResult(container: HTMLElement): void {
 
   const saveBtn = document.createElement('button');
   saveBtn.className = 'download-btn';
-  const extMap: Record<string, string> = { png: 'png', jpeg: 'jpg', webp: 'webp' };
-  const ext = extMap[state.resultFormat] || 'png';
+  const ext = getFormatDetails(state.resultFormat).extension;
   saveBtn.textContent = t('save_as', { fmt: state.resultFormat.toUpperCase() });
   saveBtn.addEventListener('click', () => {
     saveBlobNative(state.resultBlob!, `chimera_stitch_${Date.now()}.${ext}`);
@@ -251,10 +249,16 @@ function renderSplitResultUI(container: HTMLElement): void {
       }
 
       try {
-        for (const r of results) {
+        for (const [imageIndex, r] of results.entries()) {
           for (const cell of r.cells) {
             const arr = new Uint8Array(await cell.blob.arrayBuffer());
-            const fileName = getCellFilename(r.imageName, r.preset, cell.index);
+            const fileName = getCellFilename(
+              r.imageName,
+              r.preset,
+              cell.index,
+              r.format,
+              imageIndex
+            );
             const sep = targetDir.includes('\\') ? '\\' : '/';
             const fullPath = targetDir.endsWith(sep) ? `${targetDir}${fileName}` : `${targetDir}${sep}${fileName}`;
             await invoke('save_file_bypass', { path: fullPath, data: Array.from(arr) });
@@ -276,7 +280,12 @@ function renderSplitResultUI(container: HTMLElement): void {
   saveCurrentBtn.addEventListener('click', async () => {
     if (!isDesktop()) {
       for (const cell of current.cells) {
-        const fileName = getCellFilename(current.imageName, current.preset, cell.index);
+        const fileName = getCellFilename(
+          current.imageName,
+          current.preset,
+          cell.index,
+          current.format
+        );
         downloadBlob(cell.blob, fileName);
       }
       return;
@@ -296,7 +305,12 @@ function renderSplitResultUI(container: HTMLElement): void {
     try {
       for (const cell of current.cells) {
         const arr = new Uint8Array(await cell.blob.arrayBuffer());
-        const fileName = getCellFilename(current.imageName, current.preset, cell.index);
+        const fileName = getCellFilename(
+          current.imageName,
+          current.preset,
+          cell.index,
+          current.format
+        );
         const sep = targetDir.includes('\\') ? '\\' : '/';
         const fullPath = targetDir.endsWith(sep) ? `${targetDir}${fileName}` : `${targetDir}${sep}${fileName}`;
         await invoke('save_file_bypass', { path: fullPath, data: Array.from(arr) });
@@ -335,7 +349,12 @@ function renderSplitResultUI(container: HTMLElement): void {
     cImg.src = url;
     cImg.alt = `cell_${cell.index}`;
     cImg.addEventListener('click', () => {
-      const fileName = getCellFilename(current.imageName, current.preset, cell.index);
+      const fileName = getCellFilename(
+        current.imageName,
+        current.preset,
+        cell.index,
+        current.format
+      );
       saveBlobNative(cell.blob, fileName);
     });
     cImg.title = `${t('click_download')} (${String(cell.index + 1).padStart(2, '0')})`;
@@ -350,4 +369,3 @@ function renderSplitResultUI(container: HTMLElement): void {
   }
   container.appendChild(grid);
 }
-
