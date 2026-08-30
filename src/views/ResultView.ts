@@ -5,6 +5,9 @@ import { invoke } from '@tauri-apps/api/core';
 import { isDesktop } from '../env';
 import JSZip from 'jszip';
 import { getCellFilename, getFormatDetails } from '../output';
+import { ObjectUrlRegistry } from '../object-url';
+
+const previewUrls = new ObjectUrlRegistry();
 
 function downloadBlob(blob: Blob, filename: string): void {
   const url = URL.createObjectURL(blob);
@@ -12,7 +15,7 @@ function downloadBlob(blob: Blob, filename: string): void {
   a.href = url;
   a.download = filename;
   a.click();
-  URL.revokeObjectURL(url);
+  setTimeout(() => URL.revokeObjectURL(url), 0);
 }
 
 async function downloadZip(results: SplitImageResult[], zipName: string): Promise<void> {
@@ -65,6 +68,7 @@ async function saveBlobNative(blob: Blob, defaultFilename: string): Promise<void
 }
 
 export function renderResultView(container: HTMLElement): void {
+  previewUrls.revokeAll();
   state.cleanup();
   container.innerHTML = '';
 
@@ -75,6 +79,7 @@ export function renderResultView(container: HTMLElement): void {
   backBtn.className = 'back-btn';
   backBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg> ' + t('back');
   backBtn.addEventListener('click', () => {
+    previewUrls.revokeAll();
     state.view = 'main';
     state.resultType = null;
     state.resultBlob = null;
@@ -107,7 +112,7 @@ export function renderResultView(container: HTMLElement): void {
 function renderStitchResult(container: HTMLElement): void {
   const previewArea = document.createElement('div');
   previewArea.className = 'preview-area';
-  const blobUrl = URL.createObjectURL(state.resultBlob!);
+  const blobUrl = previewUrls.create(state.resultBlob!);
   const img = document.createElement('img');
   img.src = blobUrl;
   img.alt = t('result_title');
@@ -129,6 +134,7 @@ function renderStitchResult(container: HTMLElement): void {
 }
 
 function renderSplitResultUI(container: HTMLElement): void {
+  previewUrls.revokeAll();
   container.innerHTML = '';
 
   const results = state.splitResults!;
@@ -162,7 +168,7 @@ function renderSplitResultUI(container: HTMLElement): void {
       cellWrap.className = 'seamless-ribbon-cell';
       
       const img = document.createElement('img');
-      img.src = URL.createObjectURL(cell.blob);
+      img.src = previewUrls.create(cell.blob);
       
       const badge = document.createElement('span');
       badge.className = 'seamless-ribbon-badge';
@@ -344,7 +350,7 @@ function renderSplitResultUI(container: HTMLElement): void {
   for (const cell of current.cells) {
     const cellDiv = document.createElement('div');
     cellDiv.className = 'cell';
-    const url = URL.createObjectURL(cell.blob);
+    const url = previewUrls.create(cell.blob);
     const cImg = document.createElement('img');
     cImg.src = url;
     cImg.alt = `cell_${cell.index}`;
