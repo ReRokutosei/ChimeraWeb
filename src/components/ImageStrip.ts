@@ -1,5 +1,6 @@
 import { state } from '../state';
 import { removeImage } from './FileDrop';
+import { t } from '../i18n';
 
 export function renderImageStrip(): HTMLElement {
   const container = document.createElement('div');
@@ -32,7 +33,7 @@ export function renderImageStrip(): HTMLElement {
       const removeBtn = document.createElement('button');
       removeBtn.className = 'remove-btn';
       removeBtn.textContent = '×';
-      removeBtn.title = '移除';
+      removeBtn.title = t('remove');
       removeBtn.addEventListener('click', e => {
         e.stopPropagation();
         removeImage(info.id);

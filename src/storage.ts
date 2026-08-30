@@ -44,7 +44,6 @@ export function loadSettings(): void {
   state.imageSpacing = readInteger('image_spacing', 0, 0, 200);
   state.spacingColor = readColor('spacing_color', '#000000');
   state.cutPreset = readEnum('cut_preset', ['grid2', 'grid3', 'x3', 'x4'], 'x4');
-  state.cutGrid = readInteger('cut_grid', 3, 2, 4);
   state.outputFormat = readEnum('output_format', ['png', 'jpeg', 'webp'], 'png');
   state.outputQuality = readInteger('output_quality', 90, 1, 100);
   state.defaultSaveDir = readString('default_save_dir', '');
@@ -71,9 +70,6 @@ export function saveSpacingColor(v: string): void {
 }
 export function saveCutPreset(v: typeof state.cutPreset): void {
   state.cutPreset = v; set('cut_preset', v); state.notify('cutPreset');
-}
-export function saveCutGrid(v: number): void {
-  state.cutGrid = v; set('cut_grid', v);
 }
 export function saveOutputFormat(v: typeof state.outputFormat): void {
   state.outputFormat = v; set('output_format', v);

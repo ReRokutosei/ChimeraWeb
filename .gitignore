@@ -25,3 +25,6 @@ dist-ssr
 
 # Rust / Tauri build artifacts
 src-tauri/target/
+
+# Local review notes
+docs/todo.md

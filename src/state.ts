@@ -31,7 +31,6 @@ class AppState {
   view: 'main' | 'result' = 'main';
   isCutMode = false;
   cutPreset: CutPreset = 'x4';
-  cutGrid = 3;
   images: ImageInfo[] = [];
   currentImageIndex = 0;
 
