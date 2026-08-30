@@ -6,8 +6,17 @@ import { isDesktop } from '../env';
 import JSZip from 'jszip';
 import { getCellFilename, getFormatDetails } from '../output';
 import { ObjectUrlRegistry } from '../object-url';
+import { exists } from '@tauri-apps/plugin-fs';
+import { findAvailablePath } from '../native-save';
 
 const previewUrls = new ObjectUrlRegistry();
+
+async function writeBlobUnique(blob: Blob, path: string): Promise<string> {
+  const targetPath = await findAvailablePath(path, candidate => exists(candidate));
+  const arr = new Uint8Array(await blob.arrayBuffer());
+  await invoke('save_file_bypass', { path: targetPath, data: Array.from(arr) });
+  return targetPath;
+}
 
 function downloadBlob(blob: Blob, filename: string): void {
   const url = URL.createObjectURL(blob);
@@ -58,8 +67,7 @@ async function saveBlobNative(blob: Blob, defaultFilename: string): Promise<void
     }
 
     if (targetPath) {
-      const arr = new Uint8Array(await blob.arrayBuffer());
-      await invoke('save_file_bypass', { path: targetPath, data: Array.from(arr) });
+      await writeBlobUnique(blob, targetPath);
     }
   } catch (e) {
     console.error('Failed to save file', e);
@@ -254,10 +262,11 @@ function renderSplitResultUI(container: HTMLElement): void {
         targetDir = selected;
       }
 
+      let savedCount = 0;
+      let renamedCount = 0;
       try {
         for (const [imageIndex, r] of results.entries()) {
           for (const cell of r.cells) {
-            const arr = new Uint8Array(await cell.blob.arrayBuffer());
             const fileName = getCellFilename(
               r.imageName,
               r.preset,
@@ -267,13 +276,15 @@ function renderSplitResultUI(container: HTMLElement): void {
             );
             const sep = targetDir.includes('\\') ? '\\' : '/';
             const fullPath = targetDir.endsWith(sep) ? `${targetDir}${fileName}` : `${targetDir}${sep}${fileName}`;
-            await invoke('save_file_bypass', { path: fullPath, data: Array.from(arr) });
+            const actualPath = await writeBlobUnique(cell.blob, fullPath);
+            savedCount++;
+            if (actualPath !== fullPath) renamedCount++;
           }
         }
-        alert(t('saved_to', { path: targetDir }));
+        alert(t('save_summary', { path: targetDir, saved: savedCount, renamed: renamedCount }));
       } catch (e) {
         console.error('Failed to save all', e);
-        alert(t('fail') + ': ' + e);
+        alert(t('save_partial', { saved: savedCount }) + ': ' + e);
       }
     });
     saveRow.appendChild(saveAllBtn);
@@ -308,9 +319,10 @@ function renderSplitResultUI(container: HTMLElement): void {
       targetDir = selected;
     }
 
+    let savedCount = 0;
+    let renamedCount = 0;
     try {
       for (const cell of current.cells) {
-        const arr = new Uint8Array(await cell.blob.arrayBuffer());
         const fileName = getCellFilename(
           current.imageName,
           current.preset,
@@ -319,12 +331,14 @@ function renderSplitResultUI(container: HTMLElement): void {
         );
         const sep = targetDir.includes('\\') ? '\\' : '/';
         const fullPath = targetDir.endsWith(sep) ? `${targetDir}${fileName}` : `${targetDir}${sep}${fileName}`;
-        await invoke('save_file_bypass', { path: fullPath, data: Array.from(arr) });
+        const actualPath = await writeBlobUnique(cell.blob, fullPath);
+        savedCount++;
+        if (actualPath !== fullPath) renamedCount++;
       }
-      alert(t('saved_to', { path: targetDir }));
+      alert(t('save_summary', { path: targetDir, saved: savedCount, renamed: renamedCount }));
     } catch (e) {
       console.error('Failed to save current', e);
-      alert(t('fail') + ': ' + e);
+      alert(t('save_partial', { saved: savedCount }) + ': ' + e);
     }
   });
   saveRow.appendChild(saveCurrentBtn);

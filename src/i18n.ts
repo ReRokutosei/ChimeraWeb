@@ -80,6 +80,8 @@ export const messages: Record<Locale, Messages> = {
     select_dir: '选择',
     always_prompt: '始终询问保存位置',
     saved_to: '已保存至 {path}',
+    save_summary: '已保存 {saved} 个文件至 {path}，自动重命名 {renamed} 个',
+    save_partial: '保存中断，已成功保存 {saved} 个文件',
     seamless_preview: 'X 时间线无缝连拼效果',
     download_zip: '下载 ZIP 压缩包',
   },
@@ -143,6 +145,8 @@ export const messages: Record<Locale, Messages> = {
     select_dir: 'Select',
     always_prompt: 'Always ask where to save',
     saved_to: 'Saved to {path}',
+    save_summary: 'Saved {saved} files to {path}; renamed {renamed}',
+    save_partial: 'Save interrupted after {saved} files',
     seamless_preview: 'X Timeline Seamless Preview',
     download_zip: 'Download ZIP',
   },
@@ -206,6 +210,8 @@ export const messages: Record<Locale, Messages> = {
     select_dir: '選択',
     always_prompt: '毎回保存先を確認する',
     saved_to: '{path} に保存しました',
+    save_summary: '{saved} ファイルを {path} に保存しました（名前変更: {renamed}）',
+    save_partial: '保存が中断されました。{saved} ファイルは保存済みです',
     seamless_preview: 'X タイムライン無縫表示プレビュー',
     download_zip: 'ZIPでまとめて保存',
   },
@@ -269,6 +275,8 @@ export const messages: Record<Locale, Messages> = {
     select_dir: '선택',
     always_prompt: '항상 저장 위치 묻기',
     saved_to: '{path} 에 저장되었습니다',
+    save_summary: '{saved}개 파일을 {path}에 저장했습니다. 이름 변경: {renamed}',
+    save_partial: '저장이 중단되었습니다. {saved}개 파일은 저장되었습니다',
     seamless_preview: 'X 타임라인 심리스 미리보기',
     download_zip: 'ZIP으로 일괄 저장',
   },
@@ -299,4 +307,3 @@ export function toggleLocale(): void {
   const next = list[(list.indexOf(locale) + 1) % list.length];
   setLocale(next);
 }
-
