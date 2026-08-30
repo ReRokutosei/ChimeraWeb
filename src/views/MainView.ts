@@ -13,6 +13,7 @@ import { renderColorPicker } from '../components/ColorPicker';
 import { renderSegmentedControl } from '../components/SegmentedBtn';
 import { stitchImages } from '../engine/stitch';
 import { splitGrid } from '../engine/split';
+import { closeImageBitmaps } from '../engine/bitmap';
 import { t, getLocale, setLocale, type Locale } from '../i18n';
 import { isDesktop } from '../env';
 import { getEncodingOptions } from '../output';
@@ -621,20 +622,24 @@ export function renderMainView(container: HTMLElement): void {
           for (const info of state.images) {
             const blob = await (await fetch(info.src)).blob();
             const bitmap = await createImageBitmap(blob);
-            const { rows, cols, cells } = await splitGrid(
-              bitmap,
-              state.cutPreset,
-              state.outputFormat,
-              state.outputQuality
-            );
-            results.push({
-              imageName: info.name,
-              preset: state.cutPreset,
-              format: state.outputFormat,
-              rows,
-              cols,
-              cells
-            });
+            try {
+              const { rows, cols, cells } = await splitGrid(
+                bitmap,
+                state.cutPreset,
+                state.outputFormat,
+                state.outputQuality
+              );
+              results.push({
+                imageName: info.name,
+                preset: state.cutPreset,
+                format: state.outputFormat,
+                rows,
+                cols,
+                cells
+              });
+            } finally {
+              bitmap.close();
+            }
           }
           state.splitResults = results;
           state.currentSplitImageIndex = 0;
@@ -642,29 +647,39 @@ export function renderMainView(container: HTMLElement): void {
           state.view = 'result';
           state.notify('view');
         } else {
-          const loaded = await Promise.all(state.images.map(async info => {
-            const blob = await (await fetch(info.src)).blob();
-            return createImageBitmap(blob);
-          }));
+          const created: ImageBitmap[] = [];
+          try {
+            const decoded = await Promise.allSettled(state.images.map(async info => {
+              const blob = await (await fetch(info.src)).blob();
+              return createImageBitmap(blob);
+            }));
+            for (const result of decoded) {
+              if (result.status === 'fulfilled') created.push(result.value);
+            }
+            const failure = decoded.find(result => result.status === 'rejected');
+            if (failure?.status === 'rejected') throw failure.reason;
 
-          const result = await stitchImages(loaded, {
-            direction: state.stitchMode === 'DIRECT_HORIZONTAL' ? 'HORIZONTAL' : 'VERTICAL',
-            spacing: state.imageSpacing,
-            spacingColor: state.spacingColor,
-            overlayEnabled: state.overlayMode === 'ENABLED',
-            overlayRatio: state.overlayArea,
-            widthScale: state.widthScale
-          });
+            const result = await stitchImages(created, {
+              direction: state.stitchMode === 'DIRECT_HORIZONTAL' ? 'HORIZONTAL' : 'VERTICAL',
+              spacing: state.imageSpacing,
+              spacingColor: state.spacingColor,
+              overlayEnabled: state.overlayMode === 'ENABLED',
+              overlayRatio: state.overlayArea,
+              widthScale: state.widthScale
+            });
 
-          const blob = await result.canvas.convertToBlob(
-            getEncodingOptions(state.outputFormat, state.outputQuality)
-          );
+            const blob = await result.canvas.convertToBlob(
+              getEncodingOptions(state.outputFormat, state.outputQuality)
+            );
 
-          state.resultType = 'stitch';
-          state.resultBlob = blob;
-          state.resultFormat = state.outputFormat;
-          state.view = 'result';
-          state.notify('view');
+            state.resultType = 'stitch';
+            state.resultBlob = blob;
+            state.resultFormat = state.outputFormat;
+            state.view = 'result';
+            state.notify('view');
+          } finally {
+            closeImageBitmaps(created);
+          }
         }
       } catch (e) {
         alert(t('fail') + ': ' + (e instanceof Error ? e.message : String(e)));
