@@ -1,9 +1,35 @@
 import { state } from './state';
 
-function get<T>(key: string, fallback: T): T {
+function getStored(key: string): unknown {
   const v = localStorage.getItem(key);
-  if (v === null) return fallback;
-  try { return JSON.parse(v) as T; } catch { return v as T; }
+  if (v === null) return undefined;
+  try { return JSON.parse(v) as unknown; } catch { return v; }
+}
+
+export function readEnum<T extends string>(key: string, allowed: readonly T[], fallback: T): T {
+  const value = getStored(key);
+  return typeof value === 'string' && allowed.includes(value as T) ? value as T : fallback;
+}
+
+export function readInteger(key: string, fallback: number, min: number, max: number): number {
+  const value = getStored(key);
+  if (typeof value !== 'number' || !Number.isFinite(value)) return fallback;
+  return Math.min(max, Math.max(min, Math.round(value)));
+}
+
+export function readBoolean(key: string, fallback: boolean): boolean {
+  const value = getStored(key);
+  return typeof value === 'boolean' ? value : fallback;
+}
+
+export function readString(key: string, fallback: string): string {
+  const value = getStored(key);
+  return typeof value === 'string' ? value : fallback;
+}
+
+function readColor(key: string, fallback: string): string {
+  const value = readString(key, fallback);
+  return /^#[0-9a-f]{6}$/i.test(value) ? value : fallback;
 }
 
 function set<T>(key: string, value: T): void {
@@ -11,18 +37,18 @@ function set<T>(key: string, value: T): void {
 }
 
 export function loadSettings(): void {
-  state.stitchMode = get('stitch_mode', 'DIRECT_VERTICAL');
-  state.widthScale = get('width_scale', 'MIN_WIDTH');
-  state.overlayArea = get('overlay_area', 10);
-  state.overlayMode = get('overlay_mode', 'DISABLED');
-  state.imageSpacing = get('image_spacing', 0);
-  state.spacingColor = get('spacing_color', '#000000');
-  state.cutPreset = get('cut_preset', 'x4');
-  state.cutGrid = get('cut_grid', 3);
-  state.outputFormat = get('output_format', 'png');
-  state.outputQuality = get('output_quality', 90);
-  state.defaultSaveDir = get('default_save_dir', '');
-  state.alwaysPromptSave = get('always_prompt_save', true);
+  state.stitchMode = readEnum('stitch_mode', ['DIRECT_VERTICAL', 'DIRECT_HORIZONTAL'], 'DIRECT_VERTICAL');
+  state.widthScale = readEnum('width_scale', ['NONE', 'MIN_WIDTH', 'MAX_WIDTH'], 'MIN_WIDTH');
+  state.overlayArea = readInteger('overlay_area', 10, 0, 100);
+  state.overlayMode = readEnum('overlay_mode', ['DISABLED', 'ENABLED'], 'DISABLED');
+  state.imageSpacing = readInteger('image_spacing', 0, 0, 200);
+  state.spacingColor = readColor('spacing_color', '#000000');
+  state.cutPreset = readEnum('cut_preset', ['grid2', 'grid3', 'x3', 'x4'], 'x4');
+  state.cutGrid = readInteger('cut_grid', 3, 2, 4);
+  state.outputFormat = readEnum('output_format', ['png', 'jpeg', 'webp'], 'png');
+  state.outputQuality = readInteger('output_quality', 90, 1, 100);
+  state.defaultSaveDir = readString('default_save_dir', '');
+  state.alwaysPromptSave = readBoolean('always_prompt_save', true);
 }
 
 export function saveStitchMode(v: typeof state.stitchMode): void {
