@@ -13,6 +13,12 @@ export interface StitchResult {
   height: number;
 }
 
+export interface OutputDimensions {
+  width: number;
+  height: number;
+  pixels: number;
+}
+
 type ImgSrc = ImageBitmap;
 export type Dims = { img?: ImgSrc; w: number; h: number };
 
@@ -63,6 +69,39 @@ export function getScaledDimensions(
     }
   }
   return dims;
+}
+
+export function estimateStitchDimensions(
+  images: { width: number; height: number }[],
+  options: StitchOptions
+): OutputDimensions | null {
+  if (images.length === 0) return null;
+  const scaled = getScaledDimensions(images, options.direction, options.widthScale);
+  let width: number;
+  let height: number;
+
+  if (options.overlayEnabled) {
+    const first = scaled[0];
+    if (options.direction === 'HORIZONTAL') {
+      const stripWidth = Math.max(1, Math.floor(first.w * options.overlayRatio / 100));
+      width = first.w + scaled.slice(1).reduce((sum, image) => sum + Math.min(stripWidth, image.w), 0);
+      height = Math.max(...scaled.map(image => image.h));
+    } else {
+      const stripHeight = Math.max(1, Math.floor(first.h * options.overlayRatio / 100));
+      width = Math.max(...scaled.map(image => image.w));
+      height = first.h + scaled.slice(1).reduce((sum, image) => sum + Math.min(stripHeight, image.h), 0);
+    }
+  } else if (options.direction === 'HORIZONTAL') {
+    width = scaled.reduce((sum, image) => sum + image.w, 0)
+      + options.spacing * Math.max(0, scaled.length - 1);
+    height = Math.max(...scaled.map(image => image.h));
+  } else {
+    width = Math.max(...scaled.map(image => image.w));
+    height = scaled.reduce((sum, image) => sum + image.h, 0)
+      + options.spacing * Math.max(0, scaled.length - 1);
+  }
+
+  return { width, height, pixels: width * height };
 }
 
 export async function stitchImages(
@@ -128,11 +167,12 @@ async function stitchHorizontal(scaled: Dims[], options: StitchOptions): Promise
 
 async function stitchOverlay(scaled: Dims[], options: StitchOptions): Promise<StitchResult> {
   if (scaled.length === 0) throw new Error('No images for overlay');
-  const width = Math.max(...scaled.map(d => d.w));
 
   if (options.direction === 'HORIZONTAL') {
-    return stitchOverlayHorizontal(scaled, options, width);
+    const height = Math.max(...scaled.map(d => d.h));
+    return stitchOverlayHorizontal(scaled, options, height);
   }
+  const width = Math.max(...scaled.map(d => d.w));
   return stitchOverlayVertical(scaled, options, width);
 }
 

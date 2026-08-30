@@ -60,10 +60,10 @@ export function saveOverlayMode(v: typeof state.overlayMode): void {
   state.overlayMode = v; set('overlay_mode', v); state.notify('overlayMode');
 }
 export function saveOverlayArea(v: number): void {
-  state.overlayArea = v; set('overlay_area', v);
+  state.overlayArea = v; set('overlay_area', v); state.notify('overlayArea');
 }
 export function saveImageSpacing(v: number): void {
-  state.imageSpacing = v; set('image_spacing', v);
+  state.imageSpacing = v; set('image_spacing', v); state.notify('imageSpacing');
 }
 export function saveSpacingColor(v: string): void {
   state.spacingColor = v; set('spacing_color', v); state.notify('spacingColor');

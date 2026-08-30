@@ -281,6 +281,16 @@ input[type="number"]:focus {
   width: 80px;
 }
 
+.output-estimate {
+  gap: 4px;
+}
+
+.output-estimate-value {
+  color: var(--text);
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
 /* ─── Segmented Control ─── */
 
 .segmented-control {
@@ -930,4 +940,3 @@ input[type="number"]:focus {
   line-height: 1.2;
   pointer-events: none;
 }
-

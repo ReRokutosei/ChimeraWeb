@@ -11,7 +11,7 @@ import { loadImages } from '../components/FileDrop';
 import { renderImageStrip } from '../components/ImageStrip';
 import { renderColorPicker } from '../components/ColorPicker';
 import { renderSegmentedControl } from '../components/SegmentedBtn';
-import { stitchImages } from '../engine/stitch';
+import { estimateStitchDimensions, stitchImages } from '../engine/stitch';
 import { splitGrid } from '../engine/split';
 import { closeImageBitmaps } from '../engine/bitmap';
 import { t, getLocale, setLocale, type Locale } from '../i18n';
@@ -479,6 +479,40 @@ function renderExportParams(): HTMLElement {
   return card;
 }
 
+function renderOutputEstimate(): HTMLElement {
+  const card = document.createElement('div');
+  card.className = 'params-card output-estimate';
+
+  const label = document.createElement('span');
+  label.className = 'param-label';
+  label.textContent = t('estimated_output');
+
+  const value = document.createElement('strong');
+  value.className = 'output-estimate-value';
+  card.appendChild(label);
+  card.appendChild(value);
+
+  const update = (): void => {
+    const estimate = estimateStitchDimensions(state.images, {
+      direction: state.stitchMode === 'DIRECT_HORIZONTAL' ? 'HORIZONTAL' : 'VERTICAL',
+      spacing: state.imageSpacing,
+      spacingColor: state.spacingColor,
+      overlayEnabled: state.overlayMode === 'ENABLED',
+      overlayRatio: state.overlayArea,
+      widthScale: state.widthScale
+    });
+    card.classList.toggle('hidden', state.isCutMode || estimate === null);
+    if (estimate) {
+      value.textContent = `${estimate.width.toLocaleString()} × ${estimate.height.toLocaleString()} · ${t('total_pixels', { pixels: estimate.pixels.toLocaleString() })}`;
+    }
+  };
+
+  ['mode', 'images', 'stitchMode', 'widthScale', 'overlayMode', 'overlayArea', 'imageSpacing']
+    .forEach(key => state.on(key, update));
+  update();
+  return card;
+}
+
 function createLabel(text: string): HTMLElement {
   const el = document.createElement('span');
   el.className = 'param-label';
@@ -603,6 +637,7 @@ export function renderMainView(container: HTMLElement): void {
     paramsScroll.appendChild(cutParams);
 
     paramsScroll.appendChild(renderOutputParams());
+    paramsScroll.appendChild(renderOutputEstimate());
     if (isDesktop()) {
       paramsScroll.appendChild(renderExportParams());
     }

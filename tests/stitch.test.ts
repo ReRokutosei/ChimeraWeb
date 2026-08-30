@@ -1,5 +1,9 @@
-import { describe, it, expect } from 'vitest';
-import { getScaledDimensions } from '../src/engine/stitch';
+import { afterEach, describe, it, expect, vi } from 'vitest';
+import { estimateStitchDimensions, getScaledDimensions, stitchImages } from '../src/engine/stitch';
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
 
 describe('stitch engine', () => {
   describe('getScaledDimensions', () => {
@@ -66,6 +70,71 @@ describe('stitch engine', () => {
       const item = { width: 1000, height: 500, img: mockBmp };
       const scaled = getScaledDimensions([item], 'VERTICAL', 'NONE');
       expect(scaled[0].img).toBe(mockBmp);
+    });
+  });
+
+  describe('estimateStitchDimensions', () => {
+    const images = [
+      { width: 100, height: 200 },
+      { width: 80, height: 100 },
+    ];
+
+    it('includes spacing in direct output dimensions', () => {
+      expect(estimateStitchDimensions(images, {
+        direction: 'VERTICAL',
+        spacing: 10,
+        spacingColor: '#000000',
+        overlayEnabled: false,
+        overlayRatio: 10,
+        widthScale: 'NONE',
+      })).toEqual({ width: 100, height: 310, pixels: 31_000 });
+    });
+
+    it('matches horizontal scaling and overlay strip behavior', () => {
+      expect(estimateStitchDimensions(images, {
+        direction: 'HORIZONTAL',
+        spacing: 0,
+        spacingColor: '#000000',
+        overlayEnabled: true,
+        overlayRatio: 25,
+        widthScale: 'MIN_WIDTH',
+      })).toEqual({ width: 62, height: 100, pixels: 6_200 });
+    });
+
+    it('returns null without input images', () => {
+      expect(estimateStitchDimensions([], {
+        direction: 'VERTICAL',
+        spacing: 0,
+        spacingColor: '#000000',
+        overlayEnabled: false,
+        overlayRatio: 10,
+        widthScale: 'NONE',
+      })).toBeNull();
+    });
+
+    it('uses image height for a horizontal overlay canvas', async () => {
+      const context = { drawImage: vi.fn() };
+      class MockOffscreenCanvas {
+        constructor(public width: number, public height: number) {}
+        getContext(): typeof context { return context; }
+      }
+      vi.stubGlobal('OffscreenCanvas', MockOffscreenCanvas);
+      const images = [
+        { width: 300, height: 100, close: () => {} },
+        { width: 200, height: 80, close: () => {} },
+      ] as unknown as ImageBitmap[];
+
+      const result = await stitchImages(images, {
+        direction: 'HORIZONTAL',
+        spacing: 0,
+        spacingColor: '#000000',
+        overlayEnabled: true,
+        overlayRatio: 10,
+        widthScale: 'NONE',
+      });
+
+      expect(result.height).toBe(100);
+      expect(result.canvas.height).toBe(100);
     });
   });
 });
