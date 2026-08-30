@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.1.0](https://github.com/ReRokutosei/ChimeraWeb/compare/v1.0.5...v1.1.0) (2026-08-30)
+
+
+### Features
+
+* **output:** add accurate dimension estimates ([684d4fd](https://github.com/ReRokutosei/ChimeraWeb/commit/684d4fd31ed0bf2e5afb41cc334fdd59a00c4245))
+
+
+### Bug Fixes
+
+* **cut:** preserve output format and unique filenames ([4b88672](https://github.com/ReRokutosei/ChimeraWeb/commit/4b886721fc42932738695cafdb53fe63ea1e9b94))
+* **export:** avoid overwriting existing files ([159e9c1](https://github.com/ReRokutosei/ChimeraWeb/commit/159e9c1eef8bfe5419f9e448f069aae290be71e8))
+* **input:** preserve selected image order ([bf1d57c](https://github.com/ReRokutosei/ChimeraWeb/commit/bf1d57ca4e06d555275d1ad78315db441d7a36dd))
+* **memory:** release decoded image bitmaps ([13edbda](https://github.com/ReRokutosei/ChimeraWeb/commit/13edbdaadcae76def4f1443696a9389a1e45d5c7))
+* **memory:** revoke result preview URLs ([89f94fa](https://github.com/ReRokutosei/ChimeraWeb/commit/89f94fa505dd0b5610ad3e6071ce89b5fecdba4d))
+* **settings:** validate persisted preferences ([07e0762](https://github.com/ReRokutosei/ChimeraWeb/commit/07e07628cdb9dcd46c69e552179e20d2ce763924))
+
 ### [1.0.5](https://github.com/ReRokutosei/ChimeraWeb/compare/v1.0.4...v1.0.5) (2026-08-29)
 
 
